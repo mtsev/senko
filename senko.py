@@ -22,7 +22,8 @@ with open('./keys.env') as fh:
 # Initialise objects
 client = discord.Client()
 dice = Dice(keys['API_KEY'])
-recent_users = {}
+recent_time = {}
+recent_count = {}
 
 # Start up actions
 @client.event
@@ -49,14 +50,17 @@ async def on_message(message):
         if args[0] != '!roll' or len(args) > 3:
             return
 
-        # Cooldown
-        if message.author.id in recent_users:
-            seconds = int(time.time() - recent_users[message.author.id])
-            if seconds < 60:
-                await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
-                return
+        # Cooldown - max 3 rolls per minute
+        seconds = int(time.time() - recent_time.get(message.author.id, 0))
+        if seconds > 60:
+            recent_time[message.author.id] = time.time()
+            recent_count[message.author.id] = 0
+        elif recent_count.get(message.author.id, 0) < 3:
+            recent_time[message.author.id] = time.time()
+            recent_count[message.author.id] += 1
         else:
-            recent_users[message.author.id] = time.time()
+            await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
+            return
 
         # Roll dice
         try:
