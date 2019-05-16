@@ -50,17 +50,18 @@ async def on_message(message):
         if args[0] != '!roll' or len(args) > 3:
             return
 
-        # Cooldown - max 3 rolls per minute
-        seconds = int(time.time() - recent_time.get(message.author.id, 0))
-        if seconds > 60:
-            recent_time[message.author.id] = time.time()
-            recent_count[message.author.id] = 1
-        elif recent_count.get(message.author.id, 0) < 3:
-            recent_time[message.author.id] = time.time()
-            recent_count[message.author.id] += 1
-        else:
-            await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
-            return
+        # Cooldown - max 3 rolls per minute, none for DM
+        if not isinstance(message.channel, discord.DMChannel):
+            seconds = int(time.time() - recent_time.get(message.author.id, 0))
+            if seconds > 60:
+                recent_time[message.author.id] = time.time()
+                recent_count[message.author.id] = 1
+            elif recent_count.get(message.author.id, 0) < 3:
+                recent_time[message.author.id] = time.time()
+                recent_count[message.author.id] += 1
+            else:
+                await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
+                return
 
         # Roll dice
         try:
