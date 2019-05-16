@@ -5,11 +5,9 @@ class Dice:
     def __init__(self, api_key):
         self.api_key = api_key
 
-    def roll(i,j):
+    def roll(self, i, j):
         url = "https://api.random.org/json-rpc/2/invoke"
         headers = {'content-type': 'application/json'}
-
-        # Example echo method
         payload = {
             "jsonrpc": "2.0",
             "method": "generateIntegers",
@@ -18,9 +16,8 @@ class Dice:
                 "n": 1,
                 "min": min(i, j),
                 "max": max(i, j),
-                "replacement": true
             },
-            "id": 0,
+            "id": 0
         }
         
         response = requests.post(url, data=json.dumps(payload), headers=headers).json()
