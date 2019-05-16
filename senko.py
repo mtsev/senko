@@ -54,7 +54,7 @@ async def on_message(message):
         seconds = int(time.time() - recent_time.get(message.author.id, 0))
         if seconds > 60:
             recent_time[message.author.id] = time.time()
-            recent_count[message.author.id] = 0
+            recent_count[message.author.id] = 1
         elif recent_count.get(message.author.id, 0) < 3:
             recent_time[message.author.id] = time.time()
             recent_count[message.author.id] += 1
