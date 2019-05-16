@@ -50,7 +50,7 @@ async def on_message(message):
         if args[0] != '!roll' or len(args) > 3:
             return
 
-        # Cooldown - max 3 rolls per minute, none for DM
+        # Cooldown - max 3 rolls per minute, none for DM. Silent after 5 warnings
         if not isinstance(message.channel, discord.DMChannel):
             seconds = int(time.time() - recent_time.get(message.author.id, 0))
             if seconds > 60:
@@ -59,7 +59,7 @@ async def on_message(message):
             elif recent_count.get(message.author.id, 0) < 3:
                 recent_time[message.author.id] = time.time()
                 recent_count[message.author.id] += 1
-            else:
+            elif recent_count[message.author.id] < 8:
                 await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
                 return
 
