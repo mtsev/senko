@@ -42,12 +42,19 @@ async def on_message(message):
     """
     if message.content.startswith('!roll'):
         args = message.content.split(' ')
-        if args[0] != '!roll' or len(args) > 2:
+        if args[0] != '!roll' or len(args) > 3:
             return
 
         try:
             if len(args) == 1:
                 result = dice.roll(1, 6)
+            elif len(args) == 2:
+                if int(args[1]) == 1:
+                    result = 1
+                else:
+                    result = dice.roll(1, int(args[1]))
+            elif int(args[1]) == int(args[2]):
+                result = int(args[1])
             else:
                 result = dice.roll(int(args[1]), int(args[2]))
         except ValueError:
