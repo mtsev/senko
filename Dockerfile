@@ -1,5 +1,5 @@
 FROM python:3.6-slim
-ADD commands /
+ADD dice.py /
 ADD senko.py /
 ADD keys.env /
 RUN pip3 install discord.py

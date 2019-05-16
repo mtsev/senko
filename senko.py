@@ -3,7 +3,7 @@ import discord
 import logging
 import time
 
-from commands.dice import Dice
+from dice import Dice
 
 # Set up logging
 log = logging.getLogger('discord')
