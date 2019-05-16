@@ -39,9 +39,8 @@ async def on_message(message):
     """ 
     Dice roll command using random.org
     Given no arguments generates number between 1 and 6 inclusive.
-    Given one integer i, generates number between 1 and i inclusive.
+    Given one integer i, generates number between 0 and i inclusive.
     Given two integers i and j, generates number between i and j inclusive.
-    Given more than three arguments, rolls on first two if they are integers.
     """
     if message.content.startswith('!roll'):
 
@@ -50,7 +49,7 @@ async def on_message(message):
         if args[0] != '!roll' or len(args) > 3:
             return
 
-        # Cooldown - max 3 rolls per minute, none for DM. Silent after 5 warnings
+        # Cooldown - max 2 rolls per minute, none for DM. Silent after 3 warnings
         if not isinstance(message.channel, discord.DMChannel):
             seconds = int(time.time() - recent_time.get(message.author.id, 0))
 
@@ -59,13 +58,13 @@ async def on_message(message):
                 recent_time[message.author.id] = time.time()
                 recent_count[message.author.id] = 1
 
-            # Less than 3 rolls in this minute
-            elif recent_count.get(message.author.id, 0) < 3:
+            # Less than 2 rolls in this minute
+            elif recent_count.get(message.author.id, 0) < 2:
                 recent_time[message.author.id] = time.time()
                 recent_count[message.author.id] += 1
 
-            # More than 5 cooldown warnings
-            elif recent_count[message.author.id] < 8:
+            # More than 3 cooldown warnings
+            elif recent_count[message.author.id] < 5:
                 await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
                 return
 
