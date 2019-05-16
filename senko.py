@@ -74,14 +74,13 @@ async def on_message(message):
             # No arguments
             if len(args) == 1:
                 result = dice.cached()
-                dice.roll(1, 6, 3)
             
             # One argument
             elif len(args) == 2:
-                if int(args[1]) == 1:
-                    result = 1
+                if int(args[1]) == 0:
+                    result = 0
                 else:
-                    result = dice.roll(1, int(args[1]))
+                    result = dice.roll(0, int(args[1]))
 
             # Both numbers are the same
             elif int(args[1]) == int(args[2]):

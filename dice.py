@@ -30,14 +30,15 @@ class Dice:
         if "result" not in response:
             result = random.randint(min(i, j), max(i, j))
 
-        # Dump results into cache and grab the most recent one
-        else:
+        # If multiple results, dump into cache and grab one
+        elif n > 1:
             self.cache += response["result"]["random"]["data"]
             result = self.cache[-1]
             del self.cache[-1]
 
-        # Don't keep more than 20 numbers in the cache
-        del self.cache[:20]
+        # Grab the result
+        else:
+            result = response["result"]["random"]["data"][0]
 
         return result
 
@@ -49,4 +50,4 @@ class Dice:
             del self.cache[0]
             return result
         else:
-            return roll(1, 6)
+            return self.roll(1, 6, 20)
