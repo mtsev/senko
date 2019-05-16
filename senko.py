@@ -51,9 +51,9 @@ async def on_message(message):
 
         # Cooldown
         if message.author.id in recent_users:
-            seconds = recent_users[message.author.id] - time.time()
+            seconds = int(time.time() - recent_users[message.author.id])
             if seconds < 60:
-                await message.channel.send(f"Please wait {seconds} seconds before rolling again.")
+                await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
                 return
         else:
             recent_users[message.author.id] = time.time()
