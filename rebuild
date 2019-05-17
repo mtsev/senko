@@ -1,0 +1,6 @@
+#!/bin/bash
+
+docker stop senko
+docker rm senko
+docker build -t senko .
+docker run -d --name senko senko
