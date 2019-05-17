@@ -37,7 +37,7 @@ async def on_message(message):
         return
 
     """Easter egg"""
-    if message.content.startswith("I'm back"):
+    if "i'm back" in message.content.lower():
         await message.channel.send("おかえりなのじゃ！")
 
     """ 
