@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import discord
 import logging
-import time
+
 
 from dice import Dice
+from cooldown import CDTimer
 
 # Set up logging
 log = logging.getLogger('discord')
@@ -22,8 +23,7 @@ with open('./keys.env') as fh:
 # Initialise objects
 client = discord.Client()
 dice = Dice(keys['API_KEY'])
-recent_time = {}
-recent_count = {}
+dice_cd = CooldownTimer(60, 2, 3)
 
 # Start up actions
 @client.event
@@ -53,28 +53,16 @@ async def on_message(message):
         if args[0] != '!roll' or len(args) > 3:
             return
 
-        # Cooldown - max 2 rolls per minute, none for DM. Silent after 3 warnings
+        # Cooldown - max 2 rolls per minute. Silent after 3 warnings. No cd for DMs.
         if not isinstance(message.channel, discord.DMChannel):
-            seconds = int(time.time() - recent_time.get(message.author.id, 0))
+            # Update the cooldown timer
+            dice_cd.update(message.author.id)
 
-            # Over 60 seconds since last roll
-            if seconds > 60:
-                recent_time[message.author.id] = time.time()
-                recent_count[message.author.id] = 1
-
-            # Less than 2 rolls in this minute
-            elif recent_count.get(message.author.id, 0) < 2:
-                recent_time[message.author.id] = time.time()
-                recent_count[message.author.id] += 1
-
-            # More than 3 cooldown warnings
-            elif recent_count[message.author.id] < 5:
-                recent_count[message.author.id] += 1
-                await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
-                return
-
-            # Silent after 3 warnings
-            else:
+            # Print cd warning if not silent
+            if dice_cd.is_cooldown(message.author.id):
+                if not dice_cd.is_silent(message.author.id):
+                    await message.channel.send(
+                        f"Please wait {dice_cd.count()} seconds before rolling again.")
                 return
 
         # Roll dice
