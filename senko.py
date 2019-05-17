@@ -4,7 +4,7 @@ import logging
 
 
 from dice import Dice
-from cooldown import CDTimer
+from cooldown import CooldownTimer
 
 # Set up logging
 log = logging.getLogger('discord')
