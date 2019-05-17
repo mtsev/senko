@@ -2,13 +2,10 @@ import json
 import requests
 import random
 
-from cooldown import Cooldown
-
 class Dice:
     def __init__(self, api_key):
         self.api_key = api_key
         self.cache = []
-        self.cd_timer = Cooldown(60, 2, 3)
 
     """ Get a number from random.org """
     def random(self, i, j, n=1):

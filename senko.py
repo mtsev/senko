@@ -62,7 +62,7 @@ async def on_message(message):
             if dice_cd.is_cooldown(message.author.id):
                 if not dice_cd.is_silent(message.author.id):
                     await message.channel.send(
-                        f"Please wait {dice_cd.count()} seconds before rolling again.")
+                        f"Please wait {dice_cd.count(message.author.id)} seconds before rolling again.")
                 return
 
         # Roll dice
