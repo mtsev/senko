@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import discord
 import logging
-
+import re
 
 from dice import Dice
 from cooldown import CooldownTimer
@@ -25,10 +25,15 @@ client = discord.Client()
 dice = Dice(keys['API_KEY'])
 dice_cd = CooldownTimer(60, 2, 3)
 
+
 # Start up actions
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+
+    # Initialise dice cache
+    dice.roll(1, 6)
+
 
 # Channel messages
 @client.event
@@ -37,7 +42,7 @@ async def on_message(message):
         return
 
     """Easter egg"""
-    if "i'm back" in message.content.lower():
+    if re.search("(^|\s)i'?m back($|\s)", message.content, re.IGNORECASE):
         await message.channel.send("おかえりなのじゃ！")
 
     """ 
