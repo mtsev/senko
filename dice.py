@@ -8,7 +8,9 @@ class Dice:
         self.cache = []
 
     """ Get a number from random.org """
-    def roll(self, i, j, n=1):
+    def random(self, i, j, n=1):
+
+        # JSON request to random.org API
         url = "https://api.random.org/json-rpc/2/invoke"
         headers = {'content-type': 'application/json'}
         payload = {
@@ -22,7 +24,6 @@ class Dice:
             },
             "id": 0
         }
-        
         response = requests.post(url, data=json.dumps(payload), headers=headers).json()
         assert response["id"] == 0
 
@@ -43,11 +44,24 @@ class Dice:
         return result
 
 
-    """ Return cached result of standard dice roll or generate if none"""
-    def cached(self):
-        if len(self.cache) > 0:
+    """ Return cached result for standard dice, generate otherwise"""
+    def roll(self, i, j):
+
+        # No roll needed if same
+        if i == j:
+            result = i
+
+        # Generate non-standard dice roll
+        elif not (i == 1 and j == 6):
+            result = self.random(i, j)
+
+        # Grab standard roll from cache
+        elif len(self.cache) > 0:
             result = self.cache[0]
             del self.cache[0]
-            return result
+
+        # Generate standard roll if empty cache
         else:
-            return self.roll(1, 6, 20)
+            result = self.random(1, 6, 20)
+
+        return result

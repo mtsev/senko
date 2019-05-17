@@ -39,7 +39,7 @@ async def on_message(message):
     """ 
     Dice roll command using random.org
     Given no arguments generates number between 1 and 6 inclusive.
-    Given one integer i, generates number between 0 and i inclusive.
+    Given one integer i, generates number between (+-)1 and i inclusive.
     Given two integers i and j, generates number between i and j inclusive.
     """
     if message.content.startswith('!roll'):
@@ -72,18 +72,16 @@ async def on_message(message):
         try:
             # No arguments
             if len(args) == 1:
-                result = dice.cached()
+                result = dice.roll(1, 6)
             
             # One argument
             elif len(args) == 2:
-                if int(args[1]) == 0:
-                    result = 0
+                if int(args[1]) > 1:
+                    result = dice.roll(1, int(args[1]))
+                elif int(args[1]) < -1:
+                    result = dice.roll(-1, int(args[1]))
                 else:
-                    result = dice.roll(0, int(args[1]))
-
-            # Both numbers are the same
-            elif int(args[1]) == int(args[2]):
-                result = int(args[1])
+                    result = int(args[1])
 
             # Two arguments
             else:
