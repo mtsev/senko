@@ -39,13 +39,16 @@ async def on_ready():
 # Channel messages actions
 @bot.event
 async def on_message(message):
-    if message.author == client.user:
+    # Ignore own messages
+    if message.author == bot.user:
         return
 
-    """Easter egg"""
-    if re.search("\bi'?m back\b", message.content, re.IGNORECASE):
+    # Easter egg
+    if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.IGNORECASE):
         await message.channel.send("おかえりなのじゃ！")
 
+    # Re-enable commands after overwriting on_message
+    await bot.process_commands(message)
 
 
 """ 
