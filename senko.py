@@ -65,7 +65,12 @@ async def on_message(message):
 
             # More than 3 cooldown warnings
             elif recent_count[message.author.id] < 5:
+                recent_count[message.author.id] += 1
                 await message.channel.send(f"Please wait {60 - seconds} seconds before rolling again.")
+                return
+
+            # Silent after 3 warnings
+            else:
                 return
 
         # Roll dice
