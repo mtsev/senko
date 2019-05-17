@@ -36,6 +36,10 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    """Easter egg"""
+    if message.content.startswith("I'm back"):
+        await message.channel.send("おかえりなのじゃ！")
+
     """ 
     Dice roll command using random.org
     Given no arguments generates number between 1 and 6 inclusive.
