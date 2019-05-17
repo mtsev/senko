@@ -6,6 +6,7 @@ import re
 
 from dice import Dice
 from cooldown import CooldownTimer
+from keyword import Keyword
 
 """
 # Set up logging
@@ -27,6 +28,8 @@ with open('./keys.env') as fh:
 bot = commands.Bot(command_prefix='!')
 dice = Dice(keys['API_KEY'])
 dice_cd = CooldownTimer(60, 2, 3)
+keyword = Keyword('./words.txt')
+target_id = keys['OWNER_ID']
 
 
 # Start up actions
@@ -42,6 +45,13 @@ async def on_message(message):
     # Ignore own messages
     if message.author == bot.user:
         return
+
+    # Send a DM if keyword is mentioned. Currently only for one user.
+    for word in keyword.get_words():
+        if word in message.content:
+            bot.fetch_user(target_id).send(
+                f'<{message.author}> {message.clean_content}\n({message.jump_url})'
+            )
 
     # Easter egg
     if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.IGNORECASE):

@@ -103,5 +103,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# secrets
+# local files
 keys.env
+words.txt
