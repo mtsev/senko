@@ -110,9 +110,7 @@ async def roll(ctx, *args):
 
         # Three arguments
         else:
-            result = dice.roll(
-                int(args[0]), int(args[1]), int(args[2]), int(args[2])
-            )
+            result = dice.roll(int(args[0]), int(args[1]), int(args[2]))
 
     except ValueError:
         return

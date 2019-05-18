@@ -8,7 +8,7 @@ class Dice:
         self.cache = []
 
     """ Get a number from random.org """
-    def random(self, i, j, n=1, ret=1):
+    def random(self, i, j, n):
 
         # JSON request to random.org API
         url = "https://api.random.org/json-rpc/2/invoke"
@@ -29,39 +29,31 @@ class Dice:
 
         # If something went wrong, generate pseudorandom number
         if "result" not in response:
-            result = random.randint(min(i, j), max(i, j))
-
-        # If multiple results, dump into cache and grab as needed
-        elif n > 1:
-            self.cache = response["result"]["random"]["data"] + self.cache
-            result = self.cache[0:ret]
-            del self.cache[0:ret]
+            result = [random.randint(min(i, j), max(i, j)) for x in range(n)]
 
         # Grab the result
         else:
-            result = response["result"]["random"]["data"][0]
+            result = response["result"]["random"]["data"]
 
         return result
 
 
     """ Return cached result for standard dice, generate otherwise"""
-    def roll(self, i, j):
+    def roll(self, i, j, n=1):
 
         # No roll needed if same
         if i == j:
             result = i
 
-        # Generate non-standard dice roll
-        elif not (i == 1 and j == 6):
-            result = self.random(i, j)
-
-        # Grab standard roll from cache
-        elif len(self.cache) > 0:
+        # Generate standard roll, from cache if available
+        elif (i == 1 and j == 6 and n == 1):
+            if len(self.cache) == 0:
+                self.cache += self.random(1, 6, 20)
             result = self.cache[0]
             del self.cache[0]
 
-        # Generate standard roll if empty cache
+        # Generate non-standard dice roll
         else:
-            result = self.random(1, 6, 20)
+            result = self.random(i, j, n)
 
         return result
