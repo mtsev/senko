@@ -3,6 +3,7 @@ ADD keywords.py /
 ADD dice.py /
 ADD cooldown.py /
 ADD senko.py /
+ADD words.txt /
 ADD keys.env /
 RUN pip3 install discord.py
 RUN pip3 install requests

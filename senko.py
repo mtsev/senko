@@ -44,13 +44,14 @@ async def on_message(message):
         return
 
     # Send a DM if keyword is mentioned. Currently only for one user.
-    for word in keywords.words:
-        if word in message.content.lower():
-            user = bot.get_user(int(keys['OWNER_ID']))
-            assert user is not None
-            await user.send(
-                f'<{message.author}> {message.content}\n({message.jump_url})'
-            )
+    user = bot.get_user(int(keys['OWNER_ID']))
+    assert user is not None
+    if message.author != user:
+        for word in keywords.words:
+            if word in message.content.lower():
+                await user.send(
+                    f'<{message.author.nick}> {message.clean_content}\n{message.jump_url}'
+                )
 
     # Easter egg
     if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.IGNORECASE):
