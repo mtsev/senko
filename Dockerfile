@@ -1,4 +1,5 @@
 FROM python:3.6-slim
+ADD keywords.py /
 ADD dice.py /
 ADD cooldown.py /
 ADD senko.py /

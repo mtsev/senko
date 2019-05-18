@@ -1,4 +1,4 @@
-class Keyword:
+class Keywords:
     def __init__(self, wordsfile):
         self.file = wordsfile
         with open(self.file) as fh:
