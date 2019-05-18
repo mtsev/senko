@@ -116,7 +116,7 @@ async def roll(ctx, *args):
         return
 
     # Send number to discord
-    await ctx.send(result)
+    await ctx.send(', '.join(str(x) for x in result))
 
 
 bot.run(keys['TOKEN'])

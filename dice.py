@@ -43,13 +43,13 @@ class Dice:
 
         # No roll needed if same
         if i == j:
-            result = i
+            result = [i]
 
         # Generate standard roll, from cache if available
         elif (i == 1 and j == 6 and n == 1):
             if len(self.cache) == 0:
                 self.cache += self.random(1, 6, 20)
-            result = self.cache[0]
+            result = self.cache[0:1]
             del self.cache[0]
 
         # Generate non-standard dice roll
