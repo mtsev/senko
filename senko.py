@@ -50,7 +50,7 @@ async def on_message(message):
         for word in keywords.words:
             if word in message.content.lower():
                 await user.send(
-                    f'<{message.author.nick}> {message.clean_content}\n{message.jump_url}'
+                    f'<{message.author.display_name}> {message.clean_content}\n{message.jump_url}'
                 )
 
     # Easter egg
@@ -66,12 +66,13 @@ Dice roll command using random.org
 Given no arguments generates number between 1 and 6 inclusive.
 Given one integer i, generates number between (+-)1 and i inclusive.
 Given two integers i and j, generates number between i and j inclusive.
+Given three integers i, j, and n, generates n numbers between i and j inclusive.
 """
 @bot.command()
 async def roll(ctx, *args):
 
-    # More than 2 arguments not handled
-    if len(args) > 2:
+    # More than 3 arguments not handled
+    if len(args) > 3:
         return
 
     # Cooldown - max 2 rolls per minute. Silent after 3 warnings. No cd for DMs.
@@ -104,8 +105,14 @@ async def roll(ctx, *args):
                 result = int(args[0])
 
         # Two arguments
-        else:
+        elif len(args) == 2:
             result = dice.roll(int(args[0]), int(args[1]))
+
+        # Three arguments
+        else:
+            result = dice.roll(
+                int(args[0]), int(args[1]), int(args[2]), int(args[2])
+            )
 
     except ValueError:
         return

@@ -8,7 +8,7 @@ class Dice:
         self.cache = []
 
     """ Get a number from random.org """
-    def random(self, i, j, n=1):
+    def random(self, i, j, n=1, ret=1):
 
         # JSON request to random.org API
         url = "https://api.random.org/json-rpc/2/invoke"
@@ -31,11 +31,11 @@ class Dice:
         if "result" not in response:
             result = random.randint(min(i, j), max(i, j))
 
-        # If multiple results, dump into cache and grab one
+        # If multiple results, dump into cache and grab as needed
         elif n > 1:
-            self.cache += response["result"]["random"]["data"]
-            result = self.cache[-1]
-            del self.cache[-1]
+            self.cache = response["result"]["random"]["data"] + self.cache
+            result = self.cache[0:ret]
+            del self.cache[0:ret]
 
         # Grab the result
         else:
