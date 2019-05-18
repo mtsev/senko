@@ -52,6 +52,7 @@ async def on_message(message):
                 await user.send(
                     f'<{message.author.display_name}> {message.clean_content}\n{message.jump_url}'
                 )
+                break
 
     # Easter egg
     if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.IGNORECASE):
