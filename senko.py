@@ -48,7 +48,7 @@ async def on_message(message):
     assert user is not None
     if message.author != user and message.guild is not None:
         for word in keywords.words:
-            if re.search("(^|[^a-z])" + re.escape(word) + "($|[^a-z])", message.content, re.I):
+            if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
                 quote = message.clean_content.replace("`", "'")
                 await user.send(
                         f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
@@ -57,27 +57,59 @@ async def on_message(message):
                 break
 
     # Easter egg
-    if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.I):
+    if re.search("(^|\W)i'?m back($|\W)", message.content, re.I):
         await message.channel.send("おかえりなのじゃ！")
 
     # Re-enable commands after overwriting on_message
     await bot.process_commands(message)
 
 
-"""Add keyword to be notified of"""
+"""Keywords to be notified of"""
 @bot.command()
-async def notify(ctx, *args):
-    for a in args:
-        keywords.add_word(a)
-    await message.channel.send("Keywords: " + ", ".join(keywords.words))
+async def notify(ctx, cmd, *args):
+    user = bot.get_user(int(keys['OWNER_ID']))
+    assert user is not None
+    if ctx.author != user:
+        return
 
+    message = None
 
-"""Remove keyword from notification list"""
-@bot.command()
-async def unnotify(ctx, *args):
-    for a in args:
-        keywords.del_word(a)
-    await message.channel.send("Keywords: " + ", ".join(keywords.words))
+    if cmd == "add" and len(args) > 0:
+        added = []
+        for a in args:
+            if keywords.add_word(a.lower()):
+                added.append(a.lower())
+        if len(added) > 0:
+            message = "Added: " + ", ".join(added)
+        else:
+            message = "No keywords added."
+
+    elif cmd == "rem" and len(args) > 0:
+        removed = []
+        for a in args:
+            if keywords.del_word(a.lower()):
+                removed.append(a.lower())
+        if len(removed) > 0:
+            message = "Removed: " + ", ".join(removed)
+        else:
+            message = "No keywords removed."
+
+    if cmd == "clear":
+        old_words = keywords.words.copy()
+        for w in old_words:
+            keywords.del_word(w)
+        if len(old_words) > 0:
+            message = "Removed: " + ", ".join(old_words)
+        else:
+            message = "No keywords to remove."
+
+    elif len(keywords.words) == 0:
+        message = "You have no keywords."
+    elif cmd == "list":
+        message = "Keywords: " + ", ".join(keywords.words)
+
+    if message is not None:
+        await user.send(message)
 
 
 """ 
