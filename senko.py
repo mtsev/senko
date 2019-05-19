@@ -43,7 +43,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Send a DM if keyword is mentioned. Currently only for one user.
+    # Send a DM if keyword is mentioned. Currently only for OWNER.
     user = bot.get_user(int(keys['OWNER_ID']))
     assert user is not None
     if message.author != user and message.guild is not None:
@@ -64,9 +64,15 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-"""Keywords to be notified of"""
+"""
+IRC-style keyword highlighting for word or phrases.
+Will not highlight partial match, only full word or phrase match.
+Highlight is represented as a DM from Senko with a jumplink.
+Currently only OWNER is permitted to use this command.
+"""
 @bot.command()
 async def notify(ctx, cmd, *args):
+    # Currently only for OWNER.
     user = bot.get_user(int(keys['OWNER_ID']))
     assert user is not None
     if ctx.author != user:
@@ -74,6 +80,7 @@ async def notify(ctx, cmd, *args):
 
     message = None
 
+    # Add a keyword to list
     if cmd == "add" and len(args) > 0:
         added = []
         for a in args:
@@ -84,6 +91,7 @@ async def notify(ctx, cmd, *args):
         else:
             message = "No keywords added."
 
+    # Remove a keyword from list
     elif cmd == "rem" and len(args) > 0:
         removed = []
         for a in args:
@@ -94,6 +102,7 @@ async def notify(ctx, cmd, *args):
         else:
             message = "No keywords removed."
 
+    # Remove all keywords from list
     if cmd == "clear":
         old_words = keywords.words.copy()
         for w in old_words:
@@ -103,6 +112,7 @@ async def notify(ctx, cmd, *args):
         else:
             message = "No keywords to remove."
 
+    # Print out keywords list
     elif len(keywords.words) == 0:
         message = "You have no keywords."
     elif cmd == "list":
@@ -122,8 +132,8 @@ Given three integers i, j, and n, generates n numbers between i and j inclusive.
 @bot.command()
 async def roll(ctx, *args):
 
-    # More than 3 arguments not handled
-    if len(args) > 3:
+    # Non-integer arguments not handled
+    if not all(isinstance(a, int) for a in args):
         return
 
     # Cooldown - max 2 rolls per minute. Silent after 3 warnings. No cd for DMs.
@@ -135,36 +145,36 @@ async def roll(ctx, *args):
         if dice_cd.is_cooldown(ctx.author.id):
             if not dice_cd.is_silent(ctx.author.id):
                 await ctx.send(
-                    f'Please wait {dice_cd.count(ctx.author.id)} '
-                    f'seconds before rolling again.'
-                )
+                        f'Please wait {dice_cd.count(ctx.author.id)} '
+                        f'seconds before rolling again.')
             return
 
     # Roll dice
-    try:
+    async with ctx.typing():
         # No arguments
         if len(args) == 0:
             result = dice.roll(1, 6)
         
         # One argument
         elif len(args) == 1:
-            if int(args[0]) > 1:
-                result = dice.roll(1, int(args[0]))
-            elif int(args[0]) < -1:
-                result = dice.roll(-1, int(args[0]))
+            if args[0] > 1:
+                result = dice.roll(1, args[0])
+            elif args[0] < -1:
+                result = dice.roll(-1, args[0])
             else:
-                result = int(args[0])
+                result = args[0]
 
         # Two arguments
         elif len(args) == 2:
-            result = dice.roll(int(args[0]), int(args[1]))
+            result = dice.roll(args[0], args[1])
 
         # Three arguments
-        else:
-            result = dice.roll(int(args[0]), int(args[1]), int(args[2]))
+        elif len(args == 3):
+            result = dice.roll(args[0], args[1], args[2])
 
-    except ValueError:
-        return
+        # More than 3 arguments not handled
+        else:
+            return
 
     # Send number to discord
     await ctx.send(', '.join(str(x) for x in result))
