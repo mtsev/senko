@@ -18,6 +18,3 @@ class Keywords:
             with open(self.file, 'w') as fh:
                 for w in self.words:
                     f.write(w)
-
-    def get_words(self):
-        return self.words

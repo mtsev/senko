@@ -25,7 +25,7 @@ with open('./keys.env') as fh:
         keys[key] = value.strip()
 
 # Initialise objects
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='!', help_command=None)
 dice = Dice(keys['API_KEY'])
 dice_cd = CooldownTimer(60, 2, 3)
 keywords = Keywords('./words.txt')
