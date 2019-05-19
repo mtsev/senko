@@ -48,7 +48,7 @@ async def on_message(message):
     assert user is not None
     if message.author != user and message.guild is not None:
         for word in keywords.words:
-            if re.search("(^|[^a-z])" + word + "($|[^a-z])", message.content, re.I):
+            if re.search("(^|[^a-z])" + re.escape(word) + "($|[^a-z])", message.content, re.I):
                 quote = message.clean_content.replace("`", "'")
                 await user.send(
                         f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
