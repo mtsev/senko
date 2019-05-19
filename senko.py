@@ -64,6 +64,22 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+"""Add keyword to be notified of"""
+@bot.command()
+async def notify(ctx, *args):
+    for a in args:
+        keywords.add_word(a)
+    await message.channel.send("Keywords: " + ", ".join(keywords.words))
+
+
+"""Remove keyword from notification list"""
+@bot.command()
+async def unnotify(ctx, *args):
+    for a in args:
+        keywords.del_word(a)
+    await message.channel.send("Keywords: " + ", ".join(keywords.words))
+
+
 """ 
 Dice roll command using random.org
 Given no arguments generates number between 1 and 6 inclusive.
