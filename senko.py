@@ -46,16 +46,18 @@ async def on_message(message):
     # Send a DM if keyword is mentioned. Currently only for one user.
     user = bot.get_user(int(keys['OWNER_ID']))
     assert user is not None
-    if message.author != user:
+    if message.author != user and message.guild is not None:
         for word in keywords.words:
             if word in message.content.lower():
+                quote = message.clean_content.replace("`", "'")
                 await user.send(
-                    f'<{message.author.display_name}> {message.clean_content}\n{message.jump_url}'
-                )
+                        f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
+                        f"<{message.author.display_name}> {quote}"
+                        f"```{message.jump_url}")
                 break
 
     # Easter egg
-    if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.IGNORECASE):
+    if re.search("(^|[^a-z])i'?m back($|[^a-z])", message.content, re.I):
         await message.channel.send("おかえりなのじゃ！")
 
     # Re-enable commands after overwriting on_message
