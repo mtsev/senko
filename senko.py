@@ -17,16 +17,23 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 log.addHandler(handler)
 """
 
-# Read keys file into dict
-keys = {}
-with open('./keys.env') as fh:
+# Read secrets file into dict
+secrets = {}
+with open('./secrets') as fh:
     for line in fh:
         key, value = line.strip().split('=')
-        keys[key] = value.strip()
+        secrets[key] = value.strip()
+
+# Read Discord IDs file into dict
+ids = {}
+with open('./ids') as fh:
+    for line in fh:
+        key, value = line.strip().split('=')
+        ids[key] = int(value.strip())
 
 # Initialise objects
 bot = commands.Bot(command_prefix='!', help_command=None)
-dice = Dice(keys['API_KEY'])
+dice = Dice(secrets['RANDOM_KEY'])
 dice_cd = CooldownTimer(60, 2, 3)
 keywords = Keywords('./words.txt')
 
@@ -39,12 +46,21 @@ async def on_ready():
 # Channel messages actions
 @bot.event
 async def on_message(message):
-    # Ignore own messages
+
+    # Ignore self
     if message.author == bot.user:
         return
 
+    # Ignore Ekaterina outside of Test server
+    if message.author.id == ids['EKA_ID'] and message.guild.id != ids['EKA_SERVER']:
+        return
+
+    # Ignore Magic Conch
+    if message.author.id == ids['CONCH_ID']:
+        return
+
     # Send a DM if keyword is mentioned. Currently only for OWNER.
-    user = bot.get_user(int(keys['OWNER_ID']))
+    user = bot.get_user(ids['OWNER_ID'])
     assert user is not None
     if message.author != user and message.guild is not None:
         for word in keywords.words:
@@ -56,12 +72,28 @@ async def on_message(message):
                         f"```{message.jump_url}")
                 break
 
-    # Easter egg
-    if re.search("(^|\W)i'?m back($|\W)", message.content, re.I):
+    # Commands disabled for certain channels
+    if message.channel.id == ids['NO_CMD_CHAN']:
+        return
+    if message.guild.id == ids['DT_SERVER'] and message.channel.id != ids['DT_SPAM_CHAN']:
+        return
+
+
+    # "Welcome back" greeting, no restrictions
+    if re.search("(^|\W)i[‘’']?m back($|\W)", message.content, re.I):
         await message.channel.send("おかえりなのじゃ！")
 
-    # Re-enable commands after overwriting on_message
-    await bot.process_commands(message)
+    # DT spam channel features, unadvertised cooldown
+    if message.channel.id == ids['DT_SPAM_CHAN'] or message.channel.id == ids['DT_TEST_CHAN']:
+        if re.search("(^|\W)dumb bran($|\W)", message.content, re.I):
+            image_cd.update(message.channel.id)
+            if not image_cd.is_cooldown(message.channel.id):
+                await message.channel.send(file=discord.File('images/dumb_bran.png'))
+        
+        elif re.search("(^|\W)boi($|\W)", message.content, re.I):
+            image_cd.update(message.channel.id)
+            if not image_cd.is_cooldown(message.channel.id):
+                await message.channel.send(file=discord.File('images/boi.jpg'))
 
 
 """
@@ -73,7 +105,7 @@ Currently only OWNER is permitted to use this command.
 @bot.command()
 async def notify(ctx, cmd, *args):
     # Currently only for OWNER.
-    user = bot.get_user(int(keys['OWNER_ID']))
+    user = bot.get_user(ids['OWNER_ID'])
     assert user is not None
     if ctx.author != user:
         return
@@ -132,6 +164,10 @@ Given three integers i, j, and n, generates n numbers between i and j inclusive.
 @bot.command()
 async def roll(ctx, *args):
 
+    # More than 3 arguments not handled
+    if len(args) > 3:
+        return
+
     # Non-integer arguments not handled
     try:
         args = [int(x) for x in args]
@@ -139,7 +175,7 @@ async def roll(ctx, *args):
         return
 
     # Cooldown - max 2 rolls per minute. Silent after 3 warnings. No cd for DMs.
-    if ctx.guild is not None:
+    if ctx.guild is not None and ctx.channel.id != ids['NO_CD_CHAN']:
         # Update the cooldown timer
         dice_cd.update(ctx.author.id)
 
@@ -171,15 +207,11 @@ async def roll(ctx, *args):
             result = dice.roll(args[0], args[1])
 
         # Three arguments
-        elif len(args == 3):
-            result = dice.roll(args[0], args[1], args[2])
-
-        # More than 3 arguments not handled
         else:
-            return
+            result = dice.roll(args[0], args[1], args[2])
 
     # Send number to discord
     await ctx.send(', '.join(str(x) for x in result))
 
 
-bot.run(keys['TOKEN'])
+bot.run(secrets['TOKEN'])
