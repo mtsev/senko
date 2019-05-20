@@ -133,7 +133,9 @@ Given three integers i, j, and n, generates n numbers between i and j inclusive.
 async def roll(ctx, *args):
 
     # Non-integer arguments not handled
-    if not all(isinstance(a, int) for a in args):
+    try:
+        args = [int(x) for x in args]
+    except ValueError:
         return
 
     # Cooldown - max 2 rolls per minute. Silent after 3 warnings. No cd for DMs.
