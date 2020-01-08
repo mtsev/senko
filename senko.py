@@ -34,7 +34,7 @@ with open('./ids') as fh:
 
 # Initialise
 bot = commands.Bot(command_prefix='!', help_command=None)
-dice = Dice(keys['RANDOM_KEY'])
+dice = Dice(keys['RANDOM'])
 dice_cd = CooldownTimer(60, 2, 3)
 image_cd = CooldownTimer(3600, 1, 0)
 keywords = Keywords('./words.txt')
