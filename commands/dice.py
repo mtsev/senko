@@ -6,6 +6,8 @@ class Dice:
     def __init__(self, api_key):
         self.api_key = api_key
         self.cache = []
+        self.d1k = []
+        self.cache_size = 20
 
     """ Get a number from random.org """
     def random(self, i, j, n):
@@ -43,14 +45,21 @@ class Dice:
 
         # No roll needed if same
         if i == j:
-            result = [i]
+            result = [i for x in range(n)]
 
         # Generate standard roll, from cache if available
-        elif (i == 1 and j == 6 and n == 1):
+        elif (i == 1 and j == 6):
             if len(self.cache) == 0:
-                self.cache += self.random(1, 6, 20)
-            result = self.cache[0:1]
+                self.cache += self.random(1, 6, self.cache_size)
+            result = self.cache[0:n]
             del self.cache[0]
+
+        # Generate d1k roll, from cache if available
+        elif (i == 1 and j == 1000):
+            if len(self.d1k) == 0:
+                self.d1k += self.random(1, 1000, self.cache_size)
+            result = self.d1k[0:n]
+            del self.d1k[0]
 
         # Generate non-standard dice roll
         else:

@@ -1,10 +1,6 @@
 FROM python:3.6-slim
-ADD keywords.py /
-ADD dice.py /
-ADD cooldown.py /
-ADD senko.py /
-ADD words.txt /
-ADD keys.env /
+WORKDIR /app
+COPY . /app
 RUN pip3 install discord.py
 RUN pip3 install requests
 RUN pip3 install json-rpc

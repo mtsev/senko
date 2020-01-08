@@ -1,6 +1,11 @@
 #!/bin/bash
+docker build -t mtsev/senko .
 
-docker stop senko
-docker rm senko
-docker build -t senko .
-docker run -d --name senko senko
+echo Delete old container...
+docker rm -f senko
+
+echo Run new container...
+docker run -d \
+	--name senko \
+	--restart=always \
+	mtsev/senko

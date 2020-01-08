@@ -3,10 +3,11 @@ import discord
 from discord.ext import commands
 import logging
 import re
+import sys
 
-from dice import Dice
-from cooldown import CooldownTimer
-from keywords import Keywords
+from commands.dice import Dice
+from commands.cooldown import CooldownTimer
+from commands.keywords import Keywords
 
 """
 # Set up logging
@@ -17,12 +18,12 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 log.addHandler(handler)
 """
 
-# Read secrets file into dict
-secrets = {}
-with open('./secrets') as fh:
+# Read keys file into dict
+keys = {}
+with open('./keys') as fh:
     for line in fh:
         key, value = line.strip().split('=')
-        secrets[key] = value.strip()
+        keys[key] = value.strip()
 
 # Read Discord IDs file into dict
 ids = {}
@@ -31,10 +32,11 @@ with open('./ids') as fh:
         key, value = line.strip().split('=')
         ids[key] = int(value.strip())
 
-# Initialise objects
+# Initialise
 bot = commands.Bot(command_prefix='!', help_command=None)
-dice = Dice(secrets['RANDOM_KEY'])
+dice = Dice(keys['RANDOM_KEY'])
 dice_cd = CooldownTimer(60, 2, 3)
+image_cd = CooldownTimer(3600, 1, 0)
 keywords = Keywords('./words.txt')
 
 # Start up actions
@@ -42,6 +44,7 @@ keywords = Keywords('./words.txt')
 async def on_ready():
     print(f'We have logged in as {bot.user}')
     dice.roll(1, 6)     # initialise dice cache
+    dice.roll(1, 1000)  # initialise d1k cache
 
 # Channel messages actions
 @bot.event
@@ -65,7 +68,14 @@ async def on_message(message):
     if message.author != user and message.guild is not None:
         for word in keywords.words:
             if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
+
+                # Ignore keyword if it is nick in IRC bot
+                if f"<{word.lower()}>" in message.content.lower():
+                    continue
+
+                # Escape backticks to avoid breaking output markdown
                 quote = message.clean_content.replace("`", "'")
+                
                 await user.send(
                         f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
                         f"<{message.author.display_name}> {quote}"
@@ -95,6 +105,10 @@ async def on_message(message):
             if not image_cd.is_cooldown(message.channel.id):
                 await message.channel.send(file=discord.File('images/boi.jpg'))
 
+    # Explicitly process commands after overwriting on_message
+    ctx = await bot.get_context(message)
+    if ctx.valid:
+        await bot.invoke(ctx)
 
 """
 IRC-style keyword highlighting for word or phrases.
@@ -104,6 +118,7 @@ Currently only OWNER is permitted to use this command.
 """
 @bot.command()
 async def notify(ctx, cmd, *args):
+
     # Currently only for OWNER.
     user = bot.get_user(ids['OWNER_ID'])
     assert user is not None
@@ -151,12 +166,12 @@ async def notify(ctx, cmd, *args):
         message = "Keywords: " + ", ".join(keywords.words)
 
     if message is not None:
-        await user.send(message)
+        await user.send(f'```{message}```')
 
 
 """ 
 Dice roll command using random.org
-Given no arguments generates number between 1 and 6 inclusive.
+Given no arguments, generates number between 1 and 6 inclusive.
 Given one integer i, generates number between (+-)1 and i inclusive.
 Given two integers i and j, generates number between i and j inclusive.
 Given three integers i, j, and n, generates n numbers between i and j inclusive.
@@ -200,7 +215,7 @@ async def roll(ctx, *args):
             elif args[0] < -1:
                 result = dice.roll(-1, args[0])
             else:
-                result = args[0]
+                result = [args[0]]
 
         # Two arguments
         elif len(args) == 2:
@@ -211,7 +226,14 @@ async def roll(ctx, *args):
             result = dice.roll(args[0], args[1], args[2])
 
     # Send number to discord
-    await ctx.send(', '.join(str(x) for x in result))
+    message = ', '.join(str(x) for x in result)
+    if len(message) > 2000:
+        await ctx.send("Your roll is too big for Discord.")
+    elif len(message) > 250:
+        await ctx.send("Your roll has been sent as a DM.")
+        await ctx.author.send(message)
+    else:
+        await ctx.send(message)
 
 
-bot.run(secrets['TOKEN'])
+bot.run(keys['TOKEN'])
