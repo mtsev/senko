@@ -1,4 +1,5 @@
+.*
+*.md
 Dockerfile
-README.md
 LICENSE
 __pycache__
