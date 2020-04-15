@@ -107,3 +107,4 @@ venv.bak/
 keys
 ids
 words.txt
+*.yaml

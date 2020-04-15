@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import discord
-from discord.ext import commands
+import asyncio
 import logging
 import re
 import sys
+
+import discord
+from discord.ext import commands
 
 from commands.dice import Dice
 from commands.cooldown import CooldownTimer
@@ -83,10 +85,11 @@ async def on_message(message):
                 break
 
     # Commands disabled for certain channels
-    if message.channel.id == ids['NO_CMD_CHAN']:
-        return
-    if message.guild.id == ids['DT_SERVER'] and message.channel.id != ids['DT_SPAM_CHAN']:
-        return
+    if message.guild is not None:
+        if message.channel.id == ids['NO_CMD_CHAN']:
+            return
+        if message.guild.id == ids['DT_SERVER'] and message.channel.id != ids['DT_SPAM_CHAN']:
+            return
 
 
     # "Welcome back" greeting, no restrictions
