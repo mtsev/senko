@@ -108,3 +108,4 @@ keys
 ids
 words.txt
 *.yaml
+.vscode
