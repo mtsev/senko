@@ -2,7 +2,7 @@
 import yaml
 import os
 
-from discord.ext.commands import *
+from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 
 # Import config file
 with open('config.yaml') as stream:

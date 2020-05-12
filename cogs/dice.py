@@ -2,17 +2,18 @@ import json
 import requests
 import random
 
-from discord.ext.commands import *
+from discord.ext.commands import Bot, BucketType, Cog, Context, command, cooldown
+
 
 class RandomAPI:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         self.cache = []
         self.d1k = []
         self.cache_size = 20
 
     """ Get a number from random.org """
-    def api_request(self, i: int, j: int, n: int) -> list:
+    def _api_request(self, i: int, j: int, n: int) -> list:
 
         # JSON request to random.org API
         url = "https://api.random.org/json-rpc/2/invoke"
@@ -41,7 +42,6 @@ class RandomAPI:
 
         return result
 
-
     """ Return cached result for standard dice, generate otherwise"""
     def roll(self, i: int, j: int, n: int=1) -> list:
 
@@ -52,83 +52,60 @@ class RandomAPI:
         # Generate standard roll, from cache if available
         elif (i == 1 and j == 6):
             if len(self.cache) == 0:
-                self.cache += self.api_request(1, 6, self.cache_size)
+                self.cache += self._api_request(1, 6, self.cache_size)
             result = self.cache[0:n]
             del self.cache[0]
 
         # Generate d1k roll, from cache if available
         elif (i == 1 and j == 1000):
             if len(self.d1k) == 0:
-                self.d1k += self.api_request(1, 1000, self.cache_size)
+                self.d1k += self._api_request(1, 1000, self.cache_size)
             result = self.d1k[0:n]
             del self.d1k[0]
 
         # Generate non-standard dice roll
         else:
-            result = self.api_request(i, j, n)
+            result = self._api_request(i, j, n)
 
         return result
 
 
 class Dice(Cog):
+    """
+    Dice roll command using random.org
+    Given no arguments, generates number between 1 and 6 inclusive.
+    Given one integer j, generates number between 1 and j inclusive.
+    Given two integers i and j, generates number between i and j inclusive.
+    Given three integers i, j, and n, generates n numbers between i and j inclusive.
+    """
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.dice = RandomAPI(bot.keys['random'])
 
     # Initialise dice cache on start up
     @Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         self.dice.roll(1, 6)     # initialise dice cache
         self.dice.roll(1, 1000)  # initialise d1k cache
 
-    """ 
-    Dice roll command using random.org
-    Given no arguments, generates number between 1 and 6 inclusive.
-    Given one integer i, generates number between (+-)1 and i inclusive.
-    Given two integers i and j, generates number between i and j inclusive.
-    Given three integers i, j, and n, generates n numbers between i and j inclusive.
-    """
     @command()
     @cooldown(3, 60, BucketType.user)
-    async def roll(self, ctx: Context, *args) -> None:
+    async def roll(self, ctx: Context, j: str='6', i: str='1', n: str='1') -> None:
         if ctx.channel.id in self.bot.config['quiet_channels']:
             return
-
-        # More than 3 arguments not handled
-        if len(args) > 3:
-            return
-
-        # Non-integer arguments not handled
         try:
-            args = [int(x) for x in args]
+            i = int(i)
+            j = int(j)
+            n = int(n)
         except ValueError:
             return
-
-        # Roll dice
         async with ctx.typing():
-            # No arguments
-            if len(args) == 0:
-                result = self.dice.roll(1, 6)
-            
-            # One argument
-            elif len(args) == 1:
-                if args[0] > 1:
-                    result = self.dice.roll(1, args[0])
-                elif args[0] < -1:
-                    result = self.dice.roll(-1, args[0])
-                else:
-                    result = [args[0]]
+            result = self.dice.roll(i, j, n)
+        await self._send(ctx, result)
 
-            # Two arguments
-            elif len(args) == 2:
-                result = self.dice.roll(args[0], args[1])
-
-            # Three arguments
-            else:
-                result = self.dice.roll(args[0], args[1], args[2])
-
-        # Send number to discord
+    async def _send(self, ctx: Context, result: list) -> None:
+        """Send formatted output to Discord."""
         message = ', '.join(str(x) for x in result)
         if len(message) > 2000:
             await ctx.send("Your roll is too big for Discord.")
@@ -140,4 +117,5 @@ class Dice(Cog):
 
 
 def setup(bot: Bot) -> None:
+    """Load cog into bot."""
     bot.add_cog(Dice(bot))

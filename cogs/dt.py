@@ -1,11 +1,13 @@
 import re
 
 from discord import File, Message
-from discord.ext.commands import *
+from discord.ext.commands import Bot, Cog
+
 
 class DT(Cog):
+    """Features for DT's Discord server."""
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
     @Cog.listener()
@@ -21,4 +23,5 @@ class DT(Cog):
 
 
 def setup(bot: Bot) -> None:
+    """Load cog into bot."""
     bot.add_cog(DT(bot))
