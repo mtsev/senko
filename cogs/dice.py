@@ -3,6 +3,7 @@ import requests
 import random
 
 from discord.ext.commands import Bot, BucketType, Cog, Context, command, cooldown
+from .utils.logs import *
 
 
 class RandomAPI:
@@ -94,6 +95,8 @@ class Dice(Cog):
     async def roll(self, ctx: Context, j: str='6', i: str='1', n: str='1') -> None:
         if ctx.channel.id in self.bot.config['quiet_channels']:
             return
+        
+        log_command(ctx)
         try:
             i = int(i)
             j = int(j)

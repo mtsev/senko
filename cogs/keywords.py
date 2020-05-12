@@ -2,7 +2,7 @@ import re
 
 from discord import Message
 from discord.ext.commands import Bot, Cog, Context, group
-
+from .utils.logs import *
 
 class Database:
     def __init__(self, wordsfile: str) -> None:
@@ -51,7 +51,7 @@ class Keywords(Cog):
         user = self.bot.get_user(self.bot.config['owner'])
         assert user is not None
         if message.author != user and message.guild is not None:
-            for word in self.keywords.getWords():
+            for word in self.keywords.get_words():
                 if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
 
                     # Ignore keyword if it is nick in IRC bot
@@ -79,6 +79,7 @@ class Keywords(Cog):
     async def notify_add(self, ctx: Context, *args: str) -> None:
         """Add new keywords to list."""
         if len(args) > 0:
+            log_command(ctx)
             added = []
             for a in args:
                 if self.keywords.add_word(a.lower()):
@@ -92,6 +93,7 @@ class Keywords(Cog):
     async def notify_rem(self, ctx: Context, *args: str) -> None:
         """Remove keywords from list."""
         if len(args) > 0:
+            log_command(ctx)
             removed = []
             for a in args:
                 if self.keywords.del_word(a.lower()):
@@ -104,7 +106,8 @@ class Keywords(Cog):
     @notify.group(name='clear')
     async def notify_clear(self, ctx: Context) -> None:
         """Remove all keywords."""
-        old_words = self.keywords.getWords().copy()
+        log_command(ctx)
+        old_words = self.keywords.get_words().copy()
         for w in old_words:
             self.keywords.del_word(w)
         if len(old_words) > 0:
@@ -115,10 +118,11 @@ class Keywords(Cog):
     @notify.group(name='list')
     async def notify_list(self, ctx: Context) -> None:
         """List all keywords."""
-        if len(self.keywords.getWords()) == 0:
+        log_command(ctx)
+        if len(self.keywords.get_words()) == 0:
             await self._send(ctx, 'You have no keywords.')
         else:
-            await self._send(ctx, 'Keywords: ' + ", ".join(self.keywords.getWords()))
+            await self._send(ctx, 'Keywords: ' + ", ".join(self.keywords.get_words()))
 
     async def _send(self, ctx, message: str) -> None:
         """Send formatted output to Discord."""
