@@ -1,8 +1,7 @@
 FROM python:3.6-slim
 WORKDIR /app
+COPY requirements.txt .
+RUN python3 -m pip install --upgrade pip
+RUN pip3 install -r requirements.txt
 COPY . .
-RUN pip3 install discord.py
-RUN pip3 install requests
-RUN pip3 install json-rpc
-RUN pip3 install pyyaml
 CMD [ "python3", "senko.py" ]
