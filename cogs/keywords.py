@@ -108,14 +108,15 @@ class Keywords(Cog):
         # Get all users and their words in guild
         words = self.keywords.get_guild(message.guild.id)
         for user_id in words.keys():
+
             # Ignore messages from the user themselves
-            if message.author.id == user_id:
+            if message.author.id == int(user_id):
                 continue
 
             # Send notification if any words match
             for word in words[user_id]:
                 if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
-                    self._send_notification(user_id, message)
+                    await self._send_notification(int(user_id), message)
                     break
 
     async def _send_notification(self, user_id: int, message: Message) -> None:
@@ -133,38 +134,41 @@ class Keywords(Cog):
 
     @group(aliases=['keyword', 'keywords', 'kw'])
     async def notify(self, ctx: Context) -> None:
-        if self.invoked_subcommand is not None:
-            log_command(ctx)
+        pass
 
     @notify.group(name='add', aliases=['new'])
     async def notify_add(self, ctx: Context, *args: str) -> None:
         """Add new keywords to list."""
+        log_command(ctx)
         words = [a.lower() for a in args]
         self.keywords.add_words(ctx.author.id, words)
         words = self.keywords.get_words(ctx.author.id)
-        await self._send(ctx, words.sort())
+        await self._send(ctx, words)
 
     @notify.group(name='rem', aliases=['remove', 'del', 'delete'])
     async def notify_rem(self, ctx: Context, *args: str) -> None:
         """Remove keywords from list."""
+        log_command(ctx)
         words = [a.lower() for a in args]
         self.keywords.remove_words(ctx.author.id, words)
         words = self.keywords.get_words(ctx.author.id)
-        await self._send(ctx, words.sort())
+        await self._send(ctx, words)
         
     @notify.group(name='clear')
     async def notify_clear(self, ctx: Context) -> None:
         """Remove all keywords."""
+        log_command(ctx)
         words = self.keywords.get_words(ctx.author.id)
         self.keywords.remove_words(ctx.author.id, words)
         words = self.keywords.get_words(ctx.author.id)
-        await self._send(ctx, words.sort())
+        await self._send(ctx, words)
 
     @notify.group(name='list')
     async def notify_list(self, ctx: Context) -> None:
         """List all keywords."""
+        log_command(ctx)
         words = self.keywords.get_words(ctx.author.id)
-        await self._send(ctx, words.sort())
+        await self._send(ctx, words)
 
     async def _send(self, ctx, words: list) -> None:
         """Send formatted output to Discord."""
@@ -173,7 +177,6 @@ class Keywords(Cog):
         else:
             message = 'Keywords: ' + ', '.join(words)
         await ctx.author.send(f'```{message}```')
-
 
 def setup(bot: Bot) -> None:
     """Load cog into bot."""
