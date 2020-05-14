@@ -20,7 +20,7 @@ class Database:
             cursorclass = pymysql.cursors.DictCursor)
         self.cache = Cache(5)
 
-    def get_words(self, guild: int) -> list:
+    def get_guild(self, guild: int) -> dict:
         # If guild isn't in cache, update cache
         if guild not in self.cache.keys():
             with self.conn.cursor() as cursor:
@@ -31,6 +31,20 @@ class Database:
 
         # Return guild from cache
         return self.cache.get_guild(guild)
+
+    def get_words(self, user: int) -> list:
+        if self.cache.has_user(user):
+            words = self.cache.get_words(user)
+        
+        # If user isn't in cache, get from database
+        else:
+            with self.conn.cursor() as cursor:
+                query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
+                cursor.execute(query, (user,))
+                results = cursor.fetchall()
+            words = [r['word'] for r in results]
+
+        return words
 
     def add_words(self, user: int, words: list) -> None:
         # Add words to database
@@ -83,92 +97,86 @@ class Keywords(Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.keywords = Database('./words.txt')
+        self.keywords = Database(bot.db)
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
+        # Ignore DMs
+        if message.guild is None:
+            return
 
-        # Send a DM if keyword is mentioned. Currently only for OWNER.
-        user = self.bot.get_user(self.bot.config['owner'])
-        assert user is not None
-        if message.author != user and message.guild is not None:
-            for word in self.keywords.get_words():
+        # Get all users and their words in guild
+        words = self.keywords.get_guild(message.guild.id)
+        for user_id in words.keys():
+
+            # Ignore messages from the user themselves
+            if message.author.id == int(user_id):
+                continue
+
+            # Send notification if any words match
+            for word in words[user_id]:
                 if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
-
-                    # Ignore keyword if it is nick in IRC bot
-                    if f"<{word.lower()}>" in message.content.lower():
-                        continue
-
-                    # Escape backticks to avoid breaking output markdown
-                    quote = message.clean_content.replace("`", "'")
-                    
-                    await user.send(
-                            f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
-                            f"<{message.author.display_name}> {quote}"
-                            f"```{message.jump_url}")
+                    await self._send_notification(int(user_id), message)
                     break
+
+    async def _send_notification(self, user_id: int, message: Message) -> None:
+        # Get user to send message to
+        user = self.bot.get_user(user_id)
+
+        # Escape backticks to avoid breaking output markdown
+        quote = message.clean_content.replace("`", "'")
+        
+        # Send DM to user
+        await user.send(
+            f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
+            f"<{message.author.display_name}> {quote}"
+            f"```{message.jump_url}")
 
     @group(aliases=['keyword', 'keywords', 'kw'])
     async def notify(self, ctx: Context) -> None:
-        # Currently only for OWNER.
-        user = self.bot.get_user(self.bot.config['owner'])
-        assert user is not None
-        if ctx.author != user:
-            return
+        pass
 
     @notify.group(name='add', aliases=['new'])
     async def notify_add(self, ctx: Context, *args: str) -> None:
         """Add new keywords to list."""
-        if len(args) > 0:
-            log_command(ctx)
-            added = []
-            for a in args:
-                if self.keywords.add_word(a.lower()):
-                    added.append(a.lower())
-            if len(added) > 0:
-                await self._send(ctx, 'Added: ' + ", ".join(added))
-            else:
-                await self._send(ctx, 'No keywords added.')
+        log_command(ctx)
+        words = [a.lower() for a in args]
+        self.keywords.add_words(ctx.author.id, words)
+        words = self.keywords.get_words(ctx.author.id)
+        await self._send(ctx, words)
 
     @notify.group(name='rem', aliases=['remove', 'del', 'delete'])
     async def notify_rem(self, ctx: Context, *args: str) -> None:
         """Remove keywords from list."""
-        if len(args) > 0:
-            log_command(ctx)
-            removed = []
-            for a in args:
-                if self.keywords.del_word(a.lower()):
-                    removed.append(a.lower())
-            if len(removed) > 0:
-                await self._send(ctx, 'Removed: ' + ", ".join(removed))
-            else:
-                await self._send(ctx, 'No keywords removed.')
-
+        log_command(ctx)
+        words = [a.lower() for a in args]
+        self.keywords.remove_words(ctx.author.id, words)
+        words = self.keywords.get_words(ctx.author.id)
+        await self._send(ctx, words)
+        
     @notify.group(name='clear')
     async def notify_clear(self, ctx: Context) -> None:
         """Remove all keywords."""
         log_command(ctx)
-        old_words = self.keywords.get_words().copy()
-        for w in old_words:
-            self.keywords.del_word(w)
-        if len(old_words) > 0:
-            await self._send(ctx, 'Removed: ' + ", ".join(old_words))
-        else:
-            await self._send(ctx, 'No keywords to remove.')
+        words = self.keywords.get_words(ctx.author.id)
+        self.keywords.remove_words(ctx.author.id, words)
+        words = self.keywords.get_words(ctx.author.id)
+        await self._send(ctx, words)
 
     @notify.group(name='list')
     async def notify_list(self, ctx: Context) -> None:
         """List all keywords."""
         log_command(ctx)
-        if len(self.keywords.get_words()) == 0:
-            await self._send(ctx, 'You have no keywords.')
-        else:
-            await self._send(ctx, 'Keywords: ' + ", ".join(self.keywords.get_words()))
+        words = self.keywords.get_words(ctx.author.id)
+        await self._send(ctx, words)
 
-    async def _send(self, ctx, message: str) -> None:
+    async def _send(self, ctx, words: list) -> None:
         """Send formatted output to Discord."""
-        await ctx.author.send(f'{message}')
-
+        if not words:
+            message = 'You have no keywords.'
+        else:
+            message = 'Keywords: ' + ', '.join(words)
+        await ctx.author.send(f'```{message}```')
 
 def setup(bot: Bot) -> None:
     """Load cog into bot."""

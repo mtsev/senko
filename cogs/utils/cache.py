@@ -48,13 +48,13 @@ class Cache:
         # Return list of keys (guild IDs) in the cache.
         return self.cache.keys()
 
-    def get_guild(self, guild_id: int) -> list:
+    def get_guild(self, guild_id: int) -> dict:
         # This is called by Database.get_words() when guild is cached.
         # We want to update usage when cache gets called by Database.get_words()
         # because that means we're checking a new message for keywords.
         self.cache[guild_id].usage += 1
 
-        # Get from cache a list of dicts mapping user_id to set of words.
+        # Get from cache a dict mapping user_id to set of words.
         # Database doesn't know about User and Guild objects.
         userlist = {}
         for user in self.cache[guild_id].get_users():
@@ -90,6 +90,12 @@ class Cache:
         for guild_id in guild_ids:
             if guild_id in self.cache.keys():
                 self.cache[guild_id].add_user(user)
+
+    def get_words(self, user_id: int) -> list:
+        # Get a user's keyword list
+        user = self._get_user(user_id)
+        if user is not None:
+            return user.get_words()
 
     def add_words(self, user_id: int, words: list) -> None:
         # Database should check if user is in cache, but we won't throw errors

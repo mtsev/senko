@@ -1,8 +1,9 @@
 import json
-import requests
 import random
 
+import requests
 from discord.ext.commands import Bot, BucketType, Cog, Context, command, cooldown
+
 from .utils.logs import *
 
 
@@ -13,8 +14,8 @@ class RandomAPI:
         self.d1k = []
         self.cache_size = 20
 
-    """ Get a number from random.org """
     def _api_request(self, i: int, j: int, n: int) -> list:
+        """ Get a number from random.org """
 
         # JSON request to random.org API
         url = "https://api.random.org/json-rpc/2/invoke"
@@ -43,8 +44,8 @@ class RandomAPI:
 
         return result
 
-    """ Return cached result for standard dice, generate otherwise"""
     def roll(self, i: int, j: int, n: int=1) -> list:
+        """ Return cached result if any, generate otherwise."""
 
         # No roll needed if same
         if i == j:
@@ -91,9 +92,11 @@ class Dice(Cog):
         self.dice.roll(1, 1000)  # initialise d1k cache
 
     @command()
-    @cooldown(3, 60, BucketType.user)
+    @cooldown(5, 60, BucketType.user)
     async def roll(self, ctx: Context, j: str='6', i: str='1', n: str='1') -> None:
-        if ctx.channel.id in self.bot.config['quiet_channels']:
+        if ctx.guild and ctx.guild.id in self.bot.quiet['guilds']:
+            return
+        if ctx.channel.id in self.bot.quiet['channels']:
             return
         
         log_command(ctx)
