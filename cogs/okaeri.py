@@ -12,7 +12,9 @@ class Okaeri(Cog):
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
-        if message.channel.id in self.bot.config['quiet_channels']:
+        if message.guild and message.guild.id in self.bot.quiet['guilds']:
+            return
+        if message.channel.id in self.bot.quiet['channels']:
             return
 
         if re.search("(^|\W)i[‘’']?m back($|\W)", message.content, re.I):

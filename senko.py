@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import yaml
 import os
 
+import yaml
 from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 
 # Import config file
@@ -10,8 +10,11 @@ with open('config.yaml') as stream:
 
 # Initialise bot
 bot = Bot(command_prefix=config['prefix'], help_command=None)
-bot.config = config
+bot.owner = config['owner']
 bot.keys = config['keys']
+bot.db = config['database']
+bot.quiet = config['quiet']
+bot.dt = config['dt_channels']
 
 # Load cogs
 for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):

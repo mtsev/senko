@@ -1,11 +1,8 @@
-from discord import DMChannel, TextChannel
 from discord.ext.commands import Context
 
 def log_command(ctx: Context) -> None:
-    if isinstance(ctx.channel, TextChannel):
-        channel = f'{ctx.channel.guild}/{ctx.channel}'
-    elif isinstance(ctx.channel, DMChannel):
-        channel = 'DM'
+    if ctx.guild:
+        channel = f'{ctx.guild}/{ctx.channel}'
     else:
-        channel = 'Unknown'
+        channel = 'DM'
     print(f'({channel}) <{ctx.author}> {ctx.message.content}')

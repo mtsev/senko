@@ -12,7 +12,7 @@ class DT(Cog):
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
-        if message.channel.id not in self.bot.config['dt_channels']:
+        if message.channel.id not in self.bot.dt:
             return
             
         if re.search("(^|\W)dumb bran($|\W)", message.content, re.I):
