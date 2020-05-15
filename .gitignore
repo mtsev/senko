@@ -109,3 +109,5 @@ ids
 words.txt
 *.yaml
 .vscode
+logs
+*.sql

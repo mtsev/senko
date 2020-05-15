@@ -150,9 +150,8 @@ class Database:
 class Keywords(Cog):
     """
     IRC-style keyword highlighting for word or phrases.
-    Will not highlight partial match, only full word or phrase match.
+    Won't highlight partial word match, only full word or phrase match.
     Highlight is represented as a DM from Senko with a jumplink.
-    Currently only OWNER is permitted to use this command.
     """
 
     def __init__(self, bot: Bot) -> None:
@@ -161,10 +160,12 @@ class Keywords(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member: Member) -> None:
+        print(f'{member.display_name} joined {member.guild.name}')
         self.keywords.add_guild_member(member.guild.id, member.id)
 
     @Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
+        print(f'{member.display_name} left {member.guild.name}')
         self.keywords.remove_guild_member(member.guild.id, member.id)
 
     @Cog.listener()

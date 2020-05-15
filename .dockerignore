@@ -3,3 +3,6 @@
 Dockerfile
 LICENSE
 __pycache__
+logs
+*.sql
+venv

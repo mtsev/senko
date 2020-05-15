@@ -1,4 +1,8 @@
 #!/bin/bash
+echo Saving container logs...
+touch logs
+docker logs senko >> logs
+
 docker build -t mtsev/senko .
 
 echo Delete old container...
@@ -8,4 +12,5 @@ echo Run new container...
 docker run -d \
 	--name senko \
 	--restart=always \
+	--network host \
 	mtsev/senko
