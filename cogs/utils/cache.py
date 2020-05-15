@@ -36,7 +36,7 @@ class Guild:
 
     def remove_user(self, user_id: int) -> None:
         # Remove user from guild
-        self.users.pop(user_id)
+        self.users.pop(user_id, None)
 
 
 class Cache:
@@ -79,13 +79,35 @@ class Cache:
             guild.add_user(user)  
         self.cache[guild_id] = guild
 
+    def remove_guild(self, guild_id: int) -> None:
+        # This gets called if Senko leaves a guild
+        self.cache.pop(guild_id, None)
+
+    def add_guild_member(self, guild_id: int, user_id: int) -> None:
+        # This gets called if a new member joins a guild that Senko is in.
+        # Database doesn't check if guild is in cache or not but it does check
+        # if the user is a member or not. So if the guild is in cache, then the
+        # user should already exist in cache too. But we'll check anyway.
+        if guild_id in self.cache.keys():
+            user = self._get_user(user_id)
+            if user is not None:
+                self.cache[guild_id].add_user(user)
+
+    def remove_guild_member(self, guild_id: int, user_id: int) -> None:
+        # This gets called if someone leaves a guild that Senko is in.
+        # The ex-member may or may not be a user, database doesn't care.
+        # Database also doesn't check if guild is in cache or not.
+        if guild_id in self.cache.keys():
+            self.cache[guild_id].remove_user(user_id)
+
+
     def has_user(self, user_id: int) -> bool:
         # Check if a user is in cache
         return (self._get_user(user_id) is not None)
 
     def add_user(self, user_id: int, guild_ids: list, words: list) -> None:
         # Add a new user to cache. This is called when we add a new user to
-        # the database or if a user in an uncached guild adds a new word.
+        # the database.
         user = User(user_id, words)
         for guild_id in guild_ids:
             if guild_id in self.cache.keys():
