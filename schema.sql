@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS guilds (
     guild   VARCHAR (20)        NOT NULL,
     user    VARCHAR (20)        NOT NULL
 
+    UNIQUE INDEX unique_guild_member (guild, user)
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci;
 
 -- create table to track user keywords
