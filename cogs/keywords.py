@@ -268,7 +268,7 @@ class Keywords(Cog):
         if not words:
             message = 'You have no keywords.'
         else:
-            message = 'Keywords: ' + ', '.join(words)
+            message = 'Keywords: ' + ', '.join(sorted(words))
         await ctx.author.send(f'```{message}```')
 
 def setup(bot: Bot) -> None:
