@@ -85,9 +85,7 @@ class Cache:
 
     def add_guild_member(self, guild_id: int, user_id: int) -> None:
         # This gets called if a new member joins a guild that Senko is in.
-        # Database doesn't check if guild is in cache or not but it does check
-        # if the user is a member or not. So if the guild is in cache, then the
-        # user should already exist in cache too. But we'll check anyway.
+        # This only gets called if the user is already in cache.
         if guild_id in self.cache.keys():
             user = self._get_user(user_id)
             if user is not None:
@@ -100,15 +98,14 @@ class Cache:
         if guild_id in self.cache.keys():
             self.cache[guild_id].remove_user(user_id)
 
-
     def has_user(self, user_id: int) -> bool:
         # Check if a user is in cache
         return (self._get_user(user_id) is not None)
 
-    def add_user(self, guild_ids: list, user_id: int) -> None:
+    def add_user(self, guild_ids: list, user_id: int, words: list) -> None:
         # Add a new user to cache. This is called when we add a new user to
-        # the database. So there is no existing user object.
-        user = User(user_id, [])
+        # the database or when user not in cache joins a cached guild.
+        user = User(user_id, words)
         for guild_id in guild_ids:
             if guild_id in self.cache.keys():
                 self.cache[guild_id].add_user(user)

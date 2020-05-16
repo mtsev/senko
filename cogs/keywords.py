@@ -58,20 +58,22 @@ class Database:
 
     def add_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone joins a guild that Senko is in.
-        with self.conn.cursor() as cursor:
-            query = "SELECT DISTINCT `user` FROM `keywords`"
-            cursor.execute(query)
-            results = cursor.fetchall()
-        all_users = [r['user'] for r in results]
-
-        # If the member is a user, add new guild mapping in database and
-        # update cache if the guild is in cache.
-        if str(member) in all_users:
+        # If the member is a user, add new guild mapping in database.
+        if self.is_new_user(member):
             with self.conn.cursor() as cursor:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"
                 cursor.execute(query, (guild, member))
             self.conn.commit()
             self.cache.add_guild_member(guild, member)
+
+            # Update cache if the guild is in cache.
+            if self.cache.has_user(member):
+                self.cache.add_guild_member(guild, member)
+
+            # If the user isn't already in cache, we need to add them.
+            else:
+                words = self.get_words(member)
+                self.cache.add_user(guild, member, words)
 
     def remove_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone leave a guild that Senko is in.
@@ -130,7 +132,7 @@ class Database:
         if self.cache.has_user(user):
             return False
         with self.conn.cursor() as cursor:
-            query = "SELECT EXISTS (SELECT 1 FROM `guilds` WHERE `user`=%s)"
+            query = "SELECT EXISTS (SELECT 1 FROM `keywords` WHERE `user`=%s)"
             cursor.execute(query, (user,))
             result = cursor.fetchone()
         return (0 in result.values())
@@ -143,7 +145,7 @@ class Database:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"
                 cursor.execute(query, (guild, user))
         self.conn.commit()
-        self.cache.add_user(guilds, user)
+        self.cache.add_user(guilds, user, [])
 
 
 class Keywords(Cog):
