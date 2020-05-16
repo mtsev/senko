@@ -11,8 +11,7 @@ from .utils.cache import Cache
 class Database:
     def __init__(self, db) -> None:
         self.conn = pymysql.connect(
-            host = db['host'],
-            port = db['port'],
+            unix_socket = db['socket'],
             user = db['user'],
             password = db['password'],
             db = db['database'],
