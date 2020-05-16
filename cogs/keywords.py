@@ -223,10 +223,6 @@ class Keywords(Cog):
     async def notify_add(self, ctx: Context, *args: str) -> None:
         """Add new keywords to list."""
         log_command(ctx)
-        words = [a.lower() for a in args]
-        self.keywords.add_words(ctx.author.id, words)
-        words = self.keywords.get_words(ctx.author.id)
-        await self._send(ctx, words)
 
         # This could potentially be a member's first time adding words.
         # Then we want to also add their guild mappings to database.
@@ -234,6 +230,12 @@ class Keywords(Cog):
             print(f'Adding new user {ctx.author.display_name} to database')
             guilds = [g.id for g in self.bot.guilds if g.get_member(ctx.author.id) is not None]
             self.keywords.add_new_user(guilds, ctx.author.id)
+
+        # Then we'll add the words for this user
+        words = [a.lower() for a in args]
+        self.keywords.add_words(ctx.author.id, words)
+        words = self.keywords.get_words(ctx.author.id)
+        await self._send(ctx, words)
 
     @notify.group(name='rem', aliases=['remove', 'del', 'delete'])
     async def notify_rem(self, ctx: Context, *args: str) -> None:

@@ -105,10 +105,10 @@ class Cache:
         # Check if a user is in cache
         return (self._get_user(user_id) is not None)
 
-    def add_user(self, user_id: int, guild_ids: list, words: list) -> None:
+    def add_user(self, guild_ids: list, user_id: int) -> None:
         # Add a new user to cache. This is called when we add a new user to
-        # the database.
-        user = User(user_id, words)
+        # the database. So there is no existing user object.
+        user = User(user_id, [])
         for guild_id in guild_ids:
             if guild_id in self.cache.keys():
                 self.cache[guild_id].add_user(user)
@@ -134,6 +134,6 @@ class Cache:
 
     def _get_user(self, user_id: int) -> User:
         for guild in self.cache.values():
-            user = guild.get_user(user_id)
+            user = guild.get_user(str(user_id))
             if user is not None:
                 return user

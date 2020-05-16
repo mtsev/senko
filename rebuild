@@ -9,8 +9,4 @@ echo Delete old container...
 docker rm -f senko
 
 echo Run new container...
-docker run -d \
-	--name senko \
-	--restart=always \
-	--network host \
-	mtsev/senko
+docker run -d --network host --name senko --restart=always mtsev/senko
