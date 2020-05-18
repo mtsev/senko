@@ -58,8 +58,8 @@ class Database:
 
     def add_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone joins a guild that Senko is in.
-        # If the member is a user, add new guild mapping in database.
-        if self.is_new_user(member):
+        # If member is an existing user, add new guild mapping in database.
+        if not self.is_new_user(member):
             with self.conn.cursor() as cursor:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"
                 cursor.execute(query, (guild, member))
@@ -73,7 +73,7 @@ class Database:
             # If the user isn't already in cache, we need to add them.
             else:
                 words = self.get_words(member)
-                self.cache.add_user(guild, member, words)
+                self.cache.add_user([guild], member, words)
 
     def remove_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone leave a guild that Senko is in.
