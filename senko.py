@@ -9,7 +9,8 @@ with open('config.yaml') as stream:
     config = yaml.safe_load(stream)
 
 # Initialise bot
-bot = Bot(command_prefix=config['prefix'], help_command=None)
+bot = Bot(command_prefix=config['prefix'])
+bot.remove_command('help')
 bot.owner = config['owner']
 bot.keys = config['keys']
 bot.db = config['database']

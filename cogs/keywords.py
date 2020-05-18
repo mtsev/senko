@@ -210,8 +210,11 @@ class Keywords(Cog):
         # Escape backticks to avoid breaking output markdown
         quote = message.clean_content.replace("`", "'")
         
-        # Send DM to user
-        await user.send(
+        # Send DM to user without formatting for push notification
+        msg = await user.send(f"<{message.author.display_name}> {quote}")
+
+        # Edit DM with nicer formatting
+        await msg.edit(content = 
             f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
             f"<{message.author.display_name}> {quote}"
             f"```{message.jump_url}")
@@ -256,7 +259,7 @@ class Keywords(Cog):
         words = self.keywords.get_words(ctx.author.id)
         await self._send(ctx, words)
 
-    @notify.group(name='list')
+    @notify.group(name='list', aliases=['all'])
     async def notify_list(self, ctx: Context) -> None:
         """List all keywords."""
         log_command(ctx)
