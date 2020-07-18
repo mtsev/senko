@@ -23,15 +23,15 @@ class Help(Cog):
                     "  !notify clear\n\n"
                     "Other commands:\n"
                     "  !roll [<max> [<min> [<num>]]]\n\n"
-                    "For more info on a command, type '!help <command>'")
-            await ctx.send(f'```{output}```')
+                    "For more info on a command, type '!help <command>'\n\n")
+            await ctx.send(f'```{output}```\nPlease visit our support server if you have any problems or questions: discord.com/invite/39mHBQh')
 
     @help.group(aliases=['keyword', 'keywords', 'kw'], invoke_without_command=True)
     async def notify(self, ctx: Context) -> None:
         output = ("!notify <subcommand> [arguments]\n\n"
                   "Aliases: keyword, keywords, kw\n\n"
                   "Receive a DM notification from Senko for server messages "
-                  "containing your keywords or phrases."
+                  "containing your keywords or phrases.\n\n"
                   "Subcommands: add, rem, list, clear\n\n"
                   "For more info on a subcommand, type '!help notify <subcommand>'")
         await ctx.send(f'```{output}```')

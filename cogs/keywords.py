@@ -161,22 +161,22 @@ class Keywords(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member: Member) -> None:
-        print(f'{member.display_name} joined {member.guild.name}')
+        # print(f'{member.display_name} joined {member.guild.name}')
         self.keywords.add_guild_member(member.guild.id, member.id)
 
     @Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
-        print(f'{member.display_name} left {member.guild.name}')
+        # print(f'{member.display_name} left {member.guild.name}')
         self.keywords.remove_guild_member(member.guild.id, member.id)
 
     @Cog.listener()
     async def on_guild_join(self, guild: Guild) -> None:
-        print(f'Joined new server {guild.name}')
+        print(f'Joined new server {guild.name} ({guild.id})')
         self.keywords.add_guild(guild)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: Guild) -> None:
-        print(f'Removed from server {guild.name}')
+        print(f'Removed from server {guild.name} ({guild.id})')
         self.keywords.remove_guild(guild)
 
     @Cog.listener()
@@ -200,10 +200,10 @@ class Keywords(Cog):
             # Send notification if any words match
             for word in words[user_id]:
                 if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
-                    await self._send_notification(int(user_id), message)
+                    await self._send_notification(int(user_id), message, word)
                     break
 
-    async def _send_notification(self, user_id: int, message: Message) -> None:
+    async def _send_notification(self, user_id: int, message: Message, word: str) -> None:
         # Get user to send message to
         user = self.bot.get_user(user_id)
 
@@ -218,6 +218,9 @@ class Keywords(Cog):
             f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
             f"<{message.author.display_name}> {quote}"
             f"```{message.jump_url}")
+
+        # Log message to console
+        print(f"Notify {user.name}#{user.discriminator} on keyword '{word}'")
 
     @group(aliases=['keyword', 'keywords', 'kw'])
     async def notify(self, ctx: Context) -> None:
