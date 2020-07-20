@@ -185,6 +185,10 @@ class Keywords(Cog):
         if message.guild is None:
             return
 
+        # DEBUG PRINT
+        for embed in message.embeds:
+            print(f'<{message.author.name}> {embed.description}')
+
         # Get all users and their words in guild
         words = self.keywords.get_guild(message.guild.id)
         for user_id in words.keys():
@@ -197,11 +201,16 @@ class Keywords(Cog):
             if int(user_id) not in [m.id for m in message.channel.members]:
                 continue
 
-            # Send notification if any words match
+            # Send notification if any words match in message or embed
             for word in words[user_id]:
                 if re.search("(^|\W)" + re.escape(word) + "($|\W)", message.content, re.I):
                     await self._send_notification(int(user_id), message, word)
                     break
+                else:
+                    for embed in message.embeds:
+                        if re.search("(^|\W)" + re.escape(word) + "($|\W)", embed.description, re.I):
+                        await self._send_notification(int(user_id), embed.description, word)
+                        break
 
     async def _send_notification(self, user_id: int, message: Message, word: str) -> None:
         # Get user to send message to
