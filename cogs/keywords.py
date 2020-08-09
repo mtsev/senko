@@ -204,19 +204,37 @@ class Keywords(Cog):
                 continue
 
             # Send notification if any words match in message or embed
-            for word in words[user_id]:
-                if re.search("(^|\W)" + re.escape(word) + "($|\W)", self._clean_mentions(message.content), re.I):
-                    await self._send_notification(int(user_id), message, message.clean_content, word)
-                    return
-                else:
-                    for embed in message.embeds:
-                        if re.search("(^|\W)" + re.escape(word) + "($|\W)", self._clean_mentions(embed.description), re.I):
-                            await self._send_notification(int(user_id), message, embed.description, word)
-                            return
+            await self._notif_loop(user_id, words[user_id], message)
+            
 
-    async def _send_notification(self, user_id: int, message: Message, quote: str, word: str) -> None:
+    async def _notif_loop(self, user_id: str, keywords: list, message: Message) -> None:
+        for word in keywords:
+            if self._has_word(word, message.content):
+                await self._send_notification(user_id, message, message.clean_content, word)
+                return
+            else:
+                for embed in message.embeds:
+                    if self._has_word(word, embed.description):
+                        await self._send_notification(user_id, message, embed.description, word)
+                        return
+                    elif self._has_word(word, embed.title):
+                        await self._send_notification(user_id, message, embed.title, word)
+                        return
+                    elif embed.fields is not embed.Empty:
+                        for field in embed.fields:
+                            if self._has_word(word, field.name):
+                                await self._send_notification(user_id, message, field.name, word)
+                                return
+                            elif self._has_word(word, field.value):
+                                await self._send_notification(user_id, message, field.value, word)
+                                return
+
+    def _has_word(self, word: str, message: str) -> bool:
+        return re.search(r"\b" + re.escape(word) + r"\b", self._clean_mentions(message), re.I)
+
+    async def _send_notification(self, user_id: str, message: Message, quote: str, word: str) -> None:
         # Get user to send message to
-        user = self.bot.get_user(user_id)
+        user = self.bot.get_user(int(user_id))
 
         # Escape backticks to avoid breaking output markdown
         quote = quote.replace("`", "'")
