@@ -1,7 +1,7 @@
 import re
 
 import pymysql.cursors
-from discord import Guild, Member, Message
+from discord import Guild, Member, Message, Forbidden
 from discord.ext.commands import Bot, Cog, Context, group
 
 from .utils.logs import *
@@ -161,9 +161,13 @@ class Keywords(Cog):
 
     def _clean_mentions(self, message: str) -> str:
         # remove the ! or & in mentions
-        if not message:
+        if message:
+            return re.sub(r"<@[!&]?([\d]+)>", r"<@\1>", message)
+        else:
             return ""
-        return re.sub(r"<@[!&]?([\d]+)>", r"<@\1>", message)
+
+    def _has_word(self, word: str, message: str) -> bool:
+        return re.search(r"\b" + re.escape(word) + r"\b", self._clean_mentions(message), re.I)
 
     @Cog.listener()
     async def on_member_join(self, member: Member) -> None:
@@ -229,27 +233,31 @@ class Keywords(Cog):
                                 await self._send_notification(user_id, message, field.value, word)
                                 return
 
-    def _has_word(self, word: str, message: str) -> bool:
-        return re.search(r"\b" + re.escape(word) + r"\b", self._clean_mentions(message), re.I)
-
     async def _send_notification(self, user_id: str, message: Message, quote: str, word: str) -> None:
         # Get user to send message to
         user = self.bot.get_user(int(user_id))
 
         # Escape backticks to avoid breaking output markdown
         quote = quote.replace("`", "'")
-        
-        # Send DM to user without formatting for push notification
-        msg = await user.send(f"<{message.author.display_name}> {quote}")
 
-        # Edit DM with nicer formatting
-        await msg.edit(content = 
-            f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
-            f"<{message.author.display_name}> {quote}"
-            f"```{message.jump_url}")
+        try:
+            # Send DM to user without formatting for push notification
+            msg = await user.send(f"<{message.author.display_name}> {quote}")
 
-        # Log message to console
-        print(f"Notify {user.name}#{user.discriminator} on keyword '{word}'")
+            # Edit DM with nicer formatting
+            await msg.edit(content = 
+                f".\n**#{message.channel.name}**  {message.channel.guild}```markdown\n"
+                f"<{message.author.display_name}> {quote}"
+                f"```{message.jump_url}")
+
+            # Log message to console
+            print(f"Notify {user.name}#{user.discriminator} on keyword '{word}'")
+
+        except Forbidden as err:
+            if err.code == 50007:
+                await message.channel.send(f"<@!{user.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
+                print(f"Couldn't DM user {user.name}")
+
 
     @group(aliases=['keyword', 'keywords', 'kw'])
     async def notify(self, ctx: Context) -> None:
@@ -281,7 +289,7 @@ class Keywords(Cog):
         self.keywords.remove_words(ctx.author.id, words)
         words = self.keywords.get_words(ctx.author.id)
         await self._send(ctx, words)
-        
+
     @notify.group(name='clear')
     async def notify_clear(self, ctx: Context) -> None:
         """Remove all keywords."""
@@ -304,7 +312,14 @@ class Keywords(Cog):
             message = 'You have no keywords.'
         else:
             message = 'Keywords: ' + ', '.join(sorted(words))
-        await ctx.author.send(f'```{message}```')
+
+        try:
+            await ctx.author.send(f'```{message}```')
+        except Forbidden as err:
+            if err.code == 50007:
+                await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
+                print(f"Couldn't DM user {ctx.author.name}")
+
 
 def setup(bot: Bot) -> None:
     """Load cog into bot."""
