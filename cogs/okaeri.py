@@ -14,13 +14,19 @@ class Okaeri(Cog):
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
-        if message.guild and message.guild.id in self.bot.quiet['guilds']:
+        if message.author.id == self.bot.user.id:
             return
-        if message.channel.id in self.bot.quiet['channels']:
+        elif message.guild and message.guild.id in self.bot.quiet['guilds']:
+            return
+        elif message.channel.id in self.bot.quiet['channels']:
             return
 
-        if re.search("(^|\W)i[‘’']?m back($|\W)", message.content, re.I):
+        if re.search(r"\bi[‘’']?m back\b", message.content, re.I):
             await message.channel.send("おかえりなのじゃ！")
+        elif re.search(r"\bgood morning\b", message.content, re.I):
+            await message.channel.send("おはようなのじゃ！")
+        elif re.search(r"\bgood ?night\b", message.content, re.I):
+            await message.channel.send("おやすみなのじゃ！")
 
     # @command(aliases=['quiet'])
     # async def mute(self, ctx: Context, *args: str) -> None:

@@ -24,9 +24,10 @@ for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
 # Log bot startup
 @bot.event
 async def on_ready() -> None:
-    print(f'We have logged in as {bot.user} in these servers ({len(bot.guilds)}):')
+    print(f'We have logged in as {bot.user} in these servers:')
     for guild in bot.guilds:
         print(f'{guild.name} ({guild.id})')
+    print(f'({len(bot.guilds)} servers)')
     print()
 
 # Handle command cooldown
