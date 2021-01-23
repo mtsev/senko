@@ -6,22 +6,7 @@ import yaml
 from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 from discord import Intents
 
-# create logger
-log = logging.getLogger(__package__)
-log.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('../senko.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('[%(asctime)s] %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-log.addHandler(fh)
-log.addHandler(ch)
+from cogs.utils.logs import log_console
 
 
 # Import config file
@@ -48,11 +33,11 @@ for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
 # Log bot startup
 @bot.event
 async def on_ready() -> None:
-    log.warning(f'We have logged in as {bot.user} in these servers:')
+    log_console(f'We have logged in as {bot.user} in these servers:')
     for guild in bot.guilds:
-        log.warning(f'{guild.name} ({guild.id})')
-    log.warning(f'({len(bot.guilds)} servers)')
-    log.warning('************************')
+        log_console(f'{guild.name} ({guild.id})')
+    log_console(f'({len(bot.guilds)} servers)')
+    log_console('************************')
 
 # Handle command cooldown
 @bot.event

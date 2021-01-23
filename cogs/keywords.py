@@ -4,7 +4,7 @@ import pymysql.cursors
 from discord import Guild, Member, Message, Forbidden
 from discord.ext.commands import Bot, Cog, Context, group
 
-from .utils.logs import *
+from .utils.logs import log_command, log_console, log_debug
 from .utils.cache import Cache
 
 
@@ -110,7 +110,7 @@ class Database:
                     # they already have (unique key 'unique_keyword'). But if
                     # it's something else, print the error.
                     if 'unique_keyword' not in str(err):
-                        print(err)
+                        log_console(err)
         self.conn.commit()
 
         # If the user is cached, we need to add the words to cache too.
@@ -172,22 +172,22 @@ class Keywords(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member: Member) -> None:
-        # print(f'{member.display_name} joined {member.guild.name}')
+        # log_debug(f'{member.display_name} joined {member.guild.name}')
         self.keywords.add_guild_member(member.guild.id, member.id)
 
     @Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
-        # print(f'{member.display_name} left {member.guild.name}')
+        # log_debug(f'{member.display_name} left {member.guild.name}')
         self.keywords.remove_guild_member(member.guild.id, member.id)
 
     @Cog.listener()
     async def on_guild_join(self, guild: Guild) -> None:
-        print(f'Joined new server {guild.name} ({guild.id})')
+        log_console(f'Joined new server {guild.name} ({guild.id})')
         self.keywords.add_guild(guild)
 
     @Cog.listener()
     async def on_guild_remove(self, guild: Guild) -> None:
-        print(f'Removed from server {guild.name} ({guild.id})')
+        log_console(f'Removed from server {guild.name} ({guild.id})')
         self.keywords.remove_guild(guild)
 
     @Cog.listener()
@@ -252,12 +252,12 @@ class Keywords(Cog):
                 f"```{message.jump_url}")
 
             # Log message to console
-            print(f"Notify {user.name}#{user.discriminator} on keyword '{word}'")
+            log_debug(f"Notify {user.name}#{user.discriminator} on keyword '{word}'")
 
         except Forbidden as err:
             if err.code == 50007:
                 await message.channel.send(f"<@!{user.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
-                print(f"Couldn't DM user {user.name}")
+                log_debug(f"Couldn't DM user {user.name}")
 
 
     @group(aliases=['keyword', 'keywords', 'kw'])
@@ -272,7 +272,7 @@ class Keywords(Cog):
         # This could potentially be a member's first time adding words.
         # Then we want to also add their guild mappings to database.
         if self.keywords.is_new_user(ctx.author.id):
-            print(f'Adding new user {ctx.author.display_name} to database')
+            log_debug(f'Adding new user {ctx.author.display_name} to database')
             guilds = [g.id for g in self.bot.guilds if g.get_member(ctx.author.id) is not None]
             self.keywords.add_new_user(guilds, ctx.author.id)
 
@@ -319,7 +319,7 @@ class Keywords(Cog):
         except Forbidden as err:
             if err.code == 50007:
                 await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
-                print(f"Couldn't DM user {ctx.author.name}")
+                log_debug(f"Couldn't DM user {ctx.author.name}")
 
 
 def setup(bot: Bot) -> None:
