@@ -3,8 +3,8 @@ import os
 import logging
 
 import yaml
-from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 from discord import Intents
+from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 
 from cogs.utils.logs import log_console
 

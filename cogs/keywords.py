@@ -322,6 +322,8 @@ class Keywords(Cog):
             if err.code == 50007:
                 await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
                 log_debug(f"Couldn't DM user {ctx.author.name}")
+            else:
+                log_console(err)
 
 
 def setup(bot: Bot) -> None:

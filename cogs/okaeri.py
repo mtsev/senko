@@ -1,9 +1,9 @@
 import re
 
-from discord import Message
+from discord import Message, Forbidden
 from discord.ext.commands import Bot, Cog, command
 
-from .utils.logs import *
+from .utils.logs import log_debug, log_console
 
 
 class Okaeri(Cog):
@@ -21,12 +21,18 @@ class Okaeri(Cog):
         elif message.channel.id in self.bot.quiet['channels']:
             return
 
-        if re.search(r"\bi[‘’']?m back\b", message.content, re.I):
-            await message.channel.send("おかえりなのじゃ！")
-        elif re.search(r"\bgood morning\b", message.content, re.I):
-            await message.channel.send("おはようなのじゃ！")
-        elif re.search(r"\bgood ?night\b", message.content, re.I):
-            await message.channel.send("おやすみなのじゃ！")
+        try:
+            if re.search(r"\bi[‘’']?m back\b", message.content, re.I):
+                await message.channel.send("おかえりなのじゃ！")
+            elif re.search(r"\bgood morning\b", message.content, re.I):
+                await message.channel.send("おはようなのじゃ！")
+            elif re.search(r"\bgood ?night\b", message.content, re.I):
+                await message.channel.send("おやすみなのじゃ！")
+        except Forbidden as err:
+            if err.code == 50013:
+                log_debug(f"Missing permissions to message in {message.channel.guild}/{message.channel}")
+            else:
+                log_console(err)
 
     # @command(aliases=['quiet'])
     # async def mute(self, ctx: Context, *args: str) -> None:
