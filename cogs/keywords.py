@@ -16,7 +16,8 @@ class Database:
             password = db['password'],
             db = db['database'],
             charset = 'utf8mb4',
-            cursorclass = pymysql.cursors.DictCursor)
+            cursorclass = pymysql.cursors.DictCursor
+        )
         self.cache = Cache(5)
 
     def get_guild(self, guild: int) -> dict:
@@ -127,9 +128,6 @@ class Database:
         # Update cache
         self.cache.remove_words(user, words)
 
-        # # Check if there's no more keywords for the user
-        # self.remove_empty_user(user)
-
     def is_new_user(self, user: int) -> bool:
         # Check if a user is in database or not. Check cache first.
         if self.cache.has_user(user):
@@ -149,17 +147,6 @@ class Database:
                 cursor.execute(query, (guild, user))
         self.conn.commit()
         self.cache.add_user(guilds, user, [])
-
-    # def remove_empty_user(user: int) -> None:
-    #     # This only gets called by remove_words()
-    #     # If a user no longer has any keywords, they are removed
-    #     # If the user has no more keywords, remove them
-    #     with self.conn.cursor() as cursor:
-    #         query = "DELETE FROM `guilds` WHERE `user`=%s AND NOT EXISTS (SELECT 1 FROM `keywords` WHERE `user`=%s)"
-    #         cursor.execute(query, (user,))
-    #     self.conn.commit()
-
-    #     # Remove user from cache
 
 
 class Keywords(Cog):
