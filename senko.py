@@ -7,7 +7,7 @@ from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 from discord import Intents
 
 # create logger
-log = logging.getLogger(__package__)
+log = logging.getLogger("senko")
 log.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 fh = logging.FileHandler('../senko.log')

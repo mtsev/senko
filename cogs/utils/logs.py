@@ -1,7 +1,7 @@
 from discord.ext.commands import Context
 import logging
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("senko")
 
 def log_command(ctx: Context) -> None:
     if ctx.guild:
