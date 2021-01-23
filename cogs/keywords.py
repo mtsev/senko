@@ -21,6 +21,7 @@ class Database:
         self.cache = Cache(5)
 
     def get_guild(self, guild: int) -> dict:
+        """ Return dict of users (user IDs) in a guild and their keywords """
         # If guild isn't in cache, update cache
         if guild not in self.cache.keys():
             with self.conn.cursor() as cursor:
@@ -33,6 +34,7 @@ class Database:
         return self.cache.get_guild(guild)
 
     def add_guild(self, guild: Guild) -> None:
+        """ Add guild to database """
         # This gets called when Senko joins a new guild. Don't add to cache.
         # Get all existing users.
         with self.conn.cursor() as cursor:
@@ -50,7 +52,7 @@ class Database:
         self.conn.commit()
 
     def remove_guild(self, guild: Guild) -> None:
-        # Remove guild mappings from database and cache
+        """ Remove guild mappings from database and cache """
         with self.conn.cursor() as cursor:
             query = "DELETE FROM `guilds` WHERE `guild`=%s"
             cursor.execute(query, (guild.id,))
@@ -118,7 +120,7 @@ class Database:
             self.cache.add_words(user, words)
 
     def remove_words(self, user: int, words: list) -> None:
-        # Remove words from database
+        """ Remove words from database """
         with self.conn.cursor() as cursor:
             for word in words:
                 query = "DELETE FROM `keywords` WHERE `user`=%s AND `word`=%s"
@@ -129,7 +131,7 @@ class Database:
         self.cache.remove_words(user, words)
 
     def is_new_user(self, user: int) -> bool:
-        # Check if a user is in database or not. Check cache first.
+        """ Check if a user is in database or not. Check cache first. """
         if self.cache.has_user(user):
             return False
         with self.conn.cursor() as cursor:
@@ -139,8 +141,8 @@ class Database:
         return (0 in result.values())
 
     def add_new_user(self, guilds: list, user: int) -> None:
+        """ Add all the guild mappings to database and add new user to cache. """
         # This only gets called after is_new_user() so we know the user is new.
-        # Add all the guild mappings to database and add new user to cache.
         with self.conn.cursor() as cursor:
             for guild in guilds:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"

@@ -4,15 +4,15 @@ class User:
         self.words = set(words)
 
     def get_words(self) -> list:
-        # Get set of all words
+        """ Get set of all words """
         return list(self.words)
 
     def add_words(self, words: list) -> None:
-        # Add new words to set if not present
+        """ Add new words to set if not present """
         self.words = self.words.union(words)
 
     def remove_words(self, words: list) -> None:
-        # Remove words from set if present
+        """ Remove words from set if present """
         self.words = self.words.difference(words)
 
 
@@ -23,19 +23,19 @@ class Guild:
         self.usage = 0
 
     def get_user(self, user_id: int) -> User:
-        # Get a user from guild
+        """ Get a user from guild """
         return self.users.get(user_id)
 
     def get_users(self) -> list:
-        # Get list of all users from guild
+        """ Get list of all users from guild """
         return self.users.values()
 
     def add_user(self, user: User) -> None:
-        # Add user to guild
+        """ Add user to guild """
         self.users[user.id] = user
 
     def remove_user(self, user_id: int) -> None:
-        # Remove user from guild
+        """ Remove user from guild """
         self.users.pop(user_id, None)
 
 
@@ -45,10 +45,11 @@ class Cache:
         self.capacity = capacity
 
     def keys(self) -> list:
-        # Return list of keys (guild IDs) in the cache.
+        """ Return list of keys (guild IDs) in the cache. """
         return self.cache.keys()
 
     def get_guild(self, guild_id: int) -> dict:
+        """ Return dict of users (user IDs) in a guild and their keywords """
         # This is called by Database.get_words() when guild is cached.
         # We want to update usage when cache gets called by Database.get_words()
         # because that means we're checking a new message for keywords.
@@ -62,8 +63,8 @@ class Cache:
         return userlist
 
     def add_guild(self, guild_id: int, data: list) -> None:
+        """ Add a guild to cache, replace LFU if capacity reached. """
         # This is called by Database.get_words() when guild isn't cached.
-        # Add a guild to cache, replace LFU if capacity reached.
         # Don't worry about capacity for now, we'll handle it later.
         guild = Guild(guild_id)
         user_ids = set([d['user'] for d in data])
@@ -80,6 +81,7 @@ class Cache:
         self.cache[guild_id] = guild
 
     def remove_guild(self, guild_id: int) -> None:
+        """ Remove guild from cache """
         # This gets called if Senko leaves a guild
         self.cache.pop(guild_id, None)
 
