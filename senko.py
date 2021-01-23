@@ -4,6 +4,7 @@ import logging
 
 import yaml
 from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
+from discord import Intents
 
 # create logger
 log = logging.getLogger(__package__)
@@ -27,8 +28,12 @@ log.addHandler(ch)
 with open('config.yaml') as stream:
     config = yaml.safe_load(stream)
 
+# Set gateway intents
+intents = Intents.default()
+intents.members = True
+
 # Initialise bot
-bot = Bot(command_prefix=config['prefix'])
+bot = Bot(command_prefix=config['prefix'], intents=intents)
 bot.remove_command('help')
 bot.owner = config['owner']
 bot.keys = config['keys']
