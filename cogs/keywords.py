@@ -24,6 +24,7 @@ class Database:
         """ Return dict of users (user IDs) in a guild and their keywords """
         # If guild isn't in cache, update cache
         if guild not in self.cache.keys():
+            self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "CALL get_words (%s)"
                 cursor.execute(query, (guild,))
@@ -37,6 +38,7 @@ class Database:
         """ Add guild to database """
         # This gets called when Senko joins a new guild. Don't add to cache.
         # Get all existing users.
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "SELECT DISTINCT `user` FROM `keywords`"
             cursor.execute(query)
@@ -53,6 +55,7 @@ class Database:
 
     def remove_guild(self, guild: Guild) -> None:
         """ Remove guild mappings from database and cache """
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "DELETE FROM `guilds` WHERE `guild`=%s"
             cursor.execute(query, (guild.id,))
@@ -63,6 +66,7 @@ class Database:
         # This gets called when someone joins a guild that Senko is in.
         # If member is an existing user, add new guild mapping in database.
         if not self.is_new_user(member):
+            self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"
                 cursor.execute(query, (guild, member))
@@ -81,6 +85,7 @@ class Database:
     def remove_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone leave a guild that Senko is in.
         # Don't need to check if this guild-user mapping actually exists.
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "DELETE FROM `guilds` WHERE `guild`=%s AND `user`=%s"
             cursor.execute(query, (guild, member))
@@ -93,6 +98,7 @@ class Database:
         
         # If user isn't in cache, get from database
         else:
+            self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
                 cursor.execute(query, (user,))
@@ -102,6 +108,7 @@ class Database:
 
     def add_words(self, user: int, words: list) -> None:
         # Add words to database
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for word in words:
                 try:
@@ -121,6 +128,7 @@ class Database:
 
     def remove_words(self, user: int, words: list) -> None:
         """ Remove words from database """
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for word in words:
                 query = "DELETE FROM `keywords` WHERE `user`=%s AND `word`=%s"
@@ -134,6 +142,7 @@ class Database:
         """ Check if a user is in database or not. Check cache first. """
         if self.cache.has_user(user):
             return False
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "SELECT EXISTS (SELECT 1 FROM `guilds` WHERE `user`=%s)"
             cursor.execute(query, (user,))
@@ -143,6 +152,7 @@ class Database:
     def add_new_user(self, guilds: list, user: int) -> None:
         """ Add all the guild mappings to database and add new user to cache. """
         # This only gets called after is_new_user() so we know the user is new.
+        self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for guild in guilds:
                 query = "INSERT INTO `guilds` (`guild`, `user`) VALUES (%s, %s)"
