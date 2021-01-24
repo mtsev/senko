@@ -30,7 +30,7 @@ class Okaeri(Cog):
                 await message.channel.send("おやすみなのじゃ！")
         except Forbidden as err:
             if err.code == 50013:
-                log_debug(f"Missing permissions to message in {message.channel.guild}/{message.channel}")
+                log_debug(f"Missing permissions to message in '{message.channel.guild}/{message.channel}'")
             else:
                 log_console(err)
 
