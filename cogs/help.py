@@ -1,3 +1,4 @@
+from discord import Forbidden, TextChannel
 from discord.ext.commands import Bot, Cog, Context, group
 
 from utils import log
@@ -24,7 +25,7 @@ class Help(Cog):
                     "Other commands:\n"
                     "  !roll [<max> [<min> [<num>]]]\n\n"
                     "For more info on a command, type '!help <command>'\n\n")
-            await ctx.send(f'```{output}```\nPlease visit our support server if you have any problems or questions: discord.com/invite/39mHBQh')
+            await self._send(ctx.channel, f'```{output}```\nPlease visit our support server if you have any problems or questions: discord.com/invite/39mHBQh')
 
     @help.group(aliases=['keyword', 'keywords', 'kw'], invoke_without_command=True)
     async def notify(self, ctx: Context) -> None:
@@ -34,7 +35,7 @@ class Help(Cog):
                   "containing your keywords or phrases.\n\n"
                   "Subcommands: add, rem, list, clear\n\n"
                   "For more info on a subcommand, type '!help notify <subcommand>'")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
 
     @notify.command(name='add', aliases=['new'])
     async def notify_add(self, ctx: Context) -> None:
@@ -43,7 +44,7 @@ class Help(Cog):
                   "Add new keywords or phrases to be notified of. "
                   "Takes one or more keywords and/or phrases as arguments. "
                   "Surround phrases with quotation marks.")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
 
     @notify.command(name='rem', aliases=['remove', 'del', 'delete'])
     async def notify_rem(self, ctx: Context) -> None:
@@ -52,20 +53,20 @@ class Help(Cog):
                   "Remove keywords or phrases from notification list. "
                   "Takes one or more keywords and/or phrases as arguments. "
                   "Surround phrases with quotation marks.")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
 
     @notify.command(name='list', aliases=['all'])
     async def notify_list(self, ctx: Context) -> None:
         output = ("!notify list\n\n"
                   "Aliases: all\n\n"
                   "See all keywords and phrases in notification list.")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
 
     @notify.command(name='clear')
     async def notify_all(self, ctx: Context) -> None:
         output = ("!notify list\n\n"
                   "Remove all keywords and phrases from notification list.")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
 
     @help.group()
     async def roll(self, ctx: Context) -> None:
@@ -75,7 +76,16 @@ class Help(Cog):
                   "  max  upper bound of range  [default: 6]\n"
                   "  min  lower bound of range  [default: 1]\n"
                   "  num  number of rolls       [default: 1]")
-        await ctx.send(f'```{output}```')
+        await self._send(ctx.channel, f'```{output}```')
+
+    async def _send(self, channel: TextChannel, message: str) -> None:
+        try:
+            await channel.send(message)
+        except Forbidden as err:
+            if err.code == 50013:
+                log.debug(f"Missing permissions to message in '{channel.guild}/{channel}'")
+            else:
+                log.console(err)
 
 
 def setup(bot: Bot) -> None:

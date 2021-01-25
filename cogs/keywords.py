@@ -114,8 +114,9 @@ class Keywords(Cog):
 
         except Forbidden as err:
             if err.code == 50007:
-                await message.channel.send(f"<@!{user.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
-                log.debug(f"Couldn't DM user {user.name}")
+                log.debug(f"Couldn't notify user {user.name}")
+            else:
+                log.console(err)
 
 
     @group(aliases=['keyword', 'keywords', 'kw'])
@@ -165,7 +166,7 @@ class Keywords(Cog):
         words = self.db.get_words(ctx.author.id)
         await self._send(ctx, words)
 
-    async def _send(self, ctx, words: list) -> None:
+    async def _send(self, ctx: Context, words: list) -> None:
         """Send formatted output to Discord."""
         if not words:
             message = 'You have no keywords.'
@@ -176,8 +177,8 @@ class Keywords(Cog):
             await ctx.author.send(f'```{message}```')
         except Forbidden as err:
             if err.code == 50007:
-                await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
                 log.debug(f"Couldn't DM user {ctx.author.name}")
+                await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
             else:
                 log.console(err)
 
