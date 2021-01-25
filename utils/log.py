@@ -2,8 +2,8 @@ from discord.ext.commands import Context
 import logging
 
 # create logger
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 fh = logging.FileHandler('../senko.log')
 fh.setLevel(logging.DEBUG)
@@ -15,24 +15,24 @@ formatter = logging.Formatter('[%(asctime)s] %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
-log.addHandler(fh)
-log.addHandler(ch)
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 
-def log_command(ctx: Context) -> None:
+def command(ctx: Context) -> None:
     # log the usage of commands to log file
     if ctx.guild:
         channel = f'{ctx.guild}/{ctx.channel}'
     else:
         channel = 'DM'
-    log.debug(f'({channel}) <{ctx.author}> {ctx.message.content}')
+    logger.debug(f'({channel}) <{ctx.author}> {ctx.message.content}')
 
 
-def log_debug(msg: str) -> None:
+def debug(msg: str) -> None:
     # log debug message to log file
-    log.debug(msg)
+    logger.debug(msg)
 
 
-def log_console(msg: str) -> None:
+def console(msg: str) -> None:
     # log message to console
-    log.warning(msg)
+    logger.warning(msg)

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import os
-import logging
 
 import yaml
 from discord import Intents
 from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 
-from cogs.utils.logs import log_console
+from utils import log
 
 
 # Import config file
@@ -33,11 +32,11 @@ for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
 # Log bot startup
 @bot.event
 async def on_ready() -> None:
-    log_console(f'We have logged in as {bot.user} in these servers:')
+    log.console(f'We have logged in as {bot.user} in these servers:')
     for guild in bot.guilds:
-        log_console(f'{guild.name} ({guild.id})')
-    log_console(f'({len(bot.guilds)} servers)')
-    log_console('************************')
+        log.console(f'{guild.name} ({guild.id})')
+    log.console(f'({len(bot.guilds)} servers)')
+    log.console('************************')
 
 # Handle command cooldown
 @bot.event

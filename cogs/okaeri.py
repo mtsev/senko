@@ -3,7 +3,7 @@ import re
 from discord import Message, Forbidden
 from discord.ext.commands import Bot, Cog, command
 
-from .utils.logs import log_debug, log_console
+from utils import log
 
 
 class Okaeri(Cog):
@@ -30,13 +30,13 @@ class Okaeri(Cog):
                 await message.channel.send("おやすみなのじゃ！")
         except Forbidden as err:
             if err.code == 50013:
-                log_debug(f"Missing permissions to message in '{message.channel.guild}/{message.channel}'")
+                log.debug(f"Missing permissions to message in '{message.channel.guild}/{message.channel}'")
             else:
-                log_console(err)
+                log.console(err)
 
     # @command(aliases=['quiet'])
     # async def mute(self, ctx: Context, *args: str) -> None:
-    #     log_command(ctx)
+    #     log.command(ctx)
     #     if not args:
     #         guild = ctx.guild.id
     #         muted = self.bot.quiet['guilds']

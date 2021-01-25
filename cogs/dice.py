@@ -4,7 +4,7 @@ import random
 import requests
 from discord.ext.commands import Bot, BucketType, Cog, Context, command, cooldown
 
-from .utils.logs import *
+from utils import log
 
 
 class RandomAPI:
@@ -99,7 +99,7 @@ class Dice(Cog):
         if ctx.channel.id in self.bot.quiet['channels']:
             return
         
-        log_command(ctx)
+        log.command(ctx)
         try:
             i = int(i)
             j = int(j)

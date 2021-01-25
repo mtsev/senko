@@ -1,6 +1,6 @@
 from discord.ext.commands import Bot, Cog, Context, group
 
-from .utils.logs import *
+from utils import log
 
 
 class Help(Cog):
@@ -14,7 +14,7 @@ class Help(Cog):
 
     @group(aliases=['commands'])
     async def help(self, ctx: Context) -> None:
-        log_command(ctx)
+        log.command(ctx)
         if ctx.invoked_subcommand is None:
             output = ("Keyword notification commands:\n"
                     "  !notify add <keywords>...\n"
