@@ -13,8 +13,10 @@ with open('config.yaml') as stream:
     config = yaml.safe_load(stream)
 
 # Set gateway intents
-intents = Intents.default()
+intents = Intents.none()
+intents.guilds = True
 intents.members = True
+intents.messages = True
 
 # Initialise bot
 bot = Bot(command_prefix=config['prefix'], intents=intents)

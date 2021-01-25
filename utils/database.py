@@ -1,5 +1,4 @@
 import pymysql
-
 from discord import Guild
 
 from utils.cache import Cache
