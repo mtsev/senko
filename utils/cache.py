@@ -79,6 +79,7 @@ class Cache:
                 user = User(user_id, words)
             guild.add_user(user)  
         self.cache[guild_id] = guild
+        print(f"cache.add_guild: {self.get_guild(guild_id)}")
 
     def remove_guild(self, guild_id: int) -> None:
         """ Remove guild from cache """

@@ -27,7 +27,9 @@ class Database:
             self.cache.add_guild(guild, results)
 
         # Return guild from cache
-        return self.cache.get_guild(guild)
+        temp = self.cache.get_guild(guild)
+        print(f"get_guild: {temp}")
+        return temp
 
     def add_guild(self, guild: Guild) -> None:
         """ Add guild to database """

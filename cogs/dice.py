@@ -132,7 +132,6 @@ class Dice(Cog):
                 log.console(err)
 
 
-
 def setup(bot: Bot) -> None:
     """Load cog into bot."""
     bot.add_cog(Dice(bot))
