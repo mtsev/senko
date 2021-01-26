@@ -127,6 +127,9 @@ class Database:
         # Update cache
         self.cache.remove_words(user, words)
 
+        # Check if the users has anymore keywords and remove them if not
+        self.remove_user_if_empty(user)
+
     def is_new_user(self, user: int) -> bool:
         """ Check if a user is in database or not. Check cache first. """
         if self.cache.has_user(user):
@@ -146,3 +149,20 @@ class Database:
                 cursor.execute(query, (guild, user))
         self.conn.commit()
         self.cache.add_user(guilds, user, [])
+
+    def remove_user_if_empty(self, user: int) -> None:
+        """ Check if a user has anymore keywords left and remove them if they don't """
+        # This only gets called by remove_words()
+        # User may not be cached so check the database
+        with self.conn.cursor() as cursor:
+            query = "SELECT EXISTS (SELECT 1 FROM `keywords` WHERE `user`=%s)"
+            cursor.execute(query, (user,))
+            result = cursor.fetchone()
+
+        # Remove user from database and cache
+        if 0 in result.values():
+            with self.conn.cursor() as cursor:
+                query = "DELETE FROM `guilds` WHERE `user`=%s"
+                cursor.execute(query, (user,))
+            self.conn.commit()
+            self.cache.delete_user(user)

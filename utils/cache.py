@@ -7,13 +7,15 @@ class User:
         """ Get set of all words """
         return list(self.words)
 
-    def add_words(self, words: list) -> None:
-        """ Add new words to set if not present """
+    def add_words(self, words: list) -> int:
+        """ Add new words to set if not present. Return size of new list """
         self.words = self.words.union(words)
+        return len(self.words)
 
-    def remove_words(self, words: list) -> None:
-        """ Remove words from set if present """
+    def remove_words(self, words: list) -> int:
+        """ Remove words from set if present. Return size of new list """
         self.words = self.words.difference(words)
+        return len(self.words)
 
 
 class Guild:
@@ -23,7 +25,7 @@ class Guild:
         self.usage = 0
 
     def get_user(self, user_id: int) -> User:
-        """ Get a user from guild """
+        """ Get a user object from guild """
         return self.users.get(user_id)
 
     def get_users(self) -> list:
@@ -35,7 +37,7 @@ class Guild:
         self.users[user.id] = user
 
     def remove_user(self, user_id: int) -> None:
-        """ Remove user from guild """
+        """ Remove user from guild given its ID"""
         self.users.pop(user_id, None)
 
 
@@ -119,20 +121,33 @@ class Cache:
         if user is not None:
             return user.get_words()
 
-    def add_words(self, user_id: int, words: list) -> None:
+    def add_words(self, user_id: int, words: list) -> int:
+        """ Add words to a cached user's word list.
+        Return the number of words user has in cache, or -1 if no such cached user """
         # Database should check if user is in cache, but we won't throw errors
         # if it didn't.
+        nwords = -1
         user = self._get_user(user_id)
         if user is not None:
-            user.add_words(words)
+            nwords = user.add_words(words)
+        return nwords
 
-    def remove_words(self, user_id: int, words: list) -> None:
-        # Don't need to do anything if user doesn't exist
+    def remove_words(self, user_id: int, words: list) -> int:
+        """ Remove words from a cached user's word list. 
+        Return the number of words user has in cache, or -1 if no such cached user """
+        nwords = -1
         user = self._get_user(user_id)
         if user is not None:
-            user.remove_words(words)
+            nwords = user.remove_words(words)
+        return nwords
+
+    def delete_user(self, user_id: int) -> None:
+        """ Remove user from cache """
+        for guild in self.cache.values():
+            guild.remove_user(user_id)
 
     def _get_user(self, user_id: int) -> User:
+        """ Return a user object from their ID """
         for guild in self.cache.values():
             user = guild.get_user(str(user_id))
             if user is not None:
