@@ -103,10 +103,6 @@ class Cache:
         if guild_id in self.cache.keys():
             self.cache[guild_id].remove_user(user_id)
 
-    def has_user(self, user_id: int) -> bool:
-        # Check if a user is in cache
-        return (self._get_user(user_id) is not None)
-
     def add_user(self, guild_ids: list, user_id: int, words: list) -> None:
         # Add a new user to cache. This is called when we add a new user to
         # the database or when user not in cache joins a cached guild.
@@ -124,8 +120,6 @@ class Cache:
     def add_words(self, user_id: int, words: list) -> int:
         """ Add words to a cached user's word list.
         Return the number of words user has in cache, or -1 if no such cached user """
-        # Database should check if user is in cache, but we won't throw errors
-        # if it didn't.
         nwords = -1
         user = self._get_user(user_id)
         if user is not None:

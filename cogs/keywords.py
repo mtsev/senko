@@ -62,6 +62,10 @@ class Keywords(Cog):
             if message.author.id == int(user_id):
                 continue
 
+            # Ignore messages from Senko herself
+            if message.author.id == self.bot.user.id:
+                continue
+
             # Check if user is in the channel that the message was sent in
             if int(user_id) not in [m.id for m in message.channel.members]:
                 continue

@@ -77,15 +77,6 @@ class Database:
             self.conn.commit()
             self.cache.add_guild_member(guild, member)
 
-            # Update cache if the guild is in cache.
-            if self.cache.has_user(member):
-                self.cache.add_guild_member(guild, member)
-
-            # If the user isn't already in cache, we need to add them.
-            else:
-                words = self.get_words(member)
-                self.cache.add_user([guild], member, words)
-
     def remove_guild_member(self, guild: int, member: int) -> None:
         # This gets called when someone leave a guild that Senko is in.
         # Don't need to check if this guild-user mapping actually exists.
@@ -97,11 +88,10 @@ class Database:
         self.cache.remove_guild_member(guild, member)
 
     def get_words(self, user: int) -> list:
-        if self.cache.has_user(user):
-            words = self.cache.get_words(user)
+        words = self.cache.get_words(user)
         
         # If user isn't in cache, get from database
-        else:
+        if words is not None:
             self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
@@ -125,10 +115,7 @@ class Database:
                     if 'unique_keyword' not in str(err):
                         log.console(err)
         self.conn.commit()
-
-        # If the user is cached, we need to add the words to cache too.
-        if self.cache.has_user(user):
-            self.cache.add_words(user, words)
+        self.cache.add_words(user, words)
 
     def remove_words(self, user: int, words: list) -> None:
         """ Remove words from database """
@@ -138,8 +125,6 @@ class Database:
                 query = "DELETE FROM `keywords` WHERE `user`=%s AND `word`=%s"
                 cursor.execute(query, (user, word))
         self.conn.commit()
-
-        # Update cache
         self.cache.remove_words(user, words)
 
         # Check if the users has anymore keywords and remove them if not
@@ -147,7 +132,7 @@ class Database:
 
     def is_new_user(self, user: int) -> bool:
         """ Check if a user is in database or not. Check cache first. """
-        if self.cache.has_user(user):
+        if self.cache.get_words(user) is not None:
             return False
 
         self.conn.ping(reconnect=True)
