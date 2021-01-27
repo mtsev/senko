@@ -91,7 +91,7 @@ class Database:
         words = self.cache.get_words(user)
         
         # If user isn't in cache, get from database
-        if words is not None:
+        if words is None:
             self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
