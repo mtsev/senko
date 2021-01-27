@@ -54,16 +54,20 @@ class Keywords(Cog):
         if message.guild is None:
             return
 
+        # Ignore messages from Senko herself
+        if message.author.id == self.bot.user.id:
+            return
+
+        # Ignore messages that look like a command
+        if message.content.startswith(self.bot.command_prefix):
+            return
+
         # Get all users and their words in guild
         words = self.db.get_guild(message.guild.id)
         for user_id in words.keys():
 
             # Ignore messages from the user themselves
             if message.author.id == int(user_id):
-                continue
-
-            # Ignore messages from Senko herself
-            if message.author.id == self.bot.user.id:
                 continue
 
             # Check if user is in the channel that the message was sent in
