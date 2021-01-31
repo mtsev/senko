@@ -146,5 +146,4 @@ class Cache:
             user = guild.get_user(str(user_id))
             if user is not None:
                 return user
-            else:
-                print(f"User not found for {user_id}")
+        print(f"User not found for {user_id}")
