@@ -137,8 +137,8 @@ class Cache:
 
     def delete_user(self, user_id: int) -> None:
         """ Remove user from cache """
-        for guild in self.cache.values():
-            guild.remove_user(user_id)
+        user = self._get_user(user_id)
+        del user
 
     def _get_user(self, user_id: int) -> User:
         """ Return a user object from their ID """
