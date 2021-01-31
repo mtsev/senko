@@ -92,6 +92,7 @@ class Database:
         
         # If user isn't in cache, get from database
         if words is None:
+            print("user not in cache")
             self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
@@ -165,6 +166,7 @@ class Database:
 
         # Remove user from database and cache
         if 0 in result.values():
+            log.debug('User removed from database')
             with self.conn.cursor() as cursor:
                 query = "DELETE FROM `guilds` WHERE `user`=%s"
                 cursor.execute(query, (user,))
