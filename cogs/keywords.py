@@ -256,7 +256,7 @@ class Keywords(Cog):
 
         except Forbidden as err:
             if err.code == 50007:
-                await message.channel.send(f"<@!{user.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
+                await message.channel.send(f"<@!{user.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.", delete_after=5.0)
                 print(f"Couldn't DM user {user.name}")
 
 
