@@ -1,27 +1,11 @@
 #!/usr/bin/env python3
 import os
-import logging
 
 import yaml
-from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 from discord import Intents
+from discord.ext.commands import Bot, Context, CommandError, CommandOnCooldown
 
-# create logger
-log = logging.getLogger("senko")
-log.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('../senko.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('[%(asctime)s] %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-log.addHandler(fh)
-log.addHandler(ch)
+from utils import log
 
 
 # Import config file
@@ -29,8 +13,10 @@ with open('config.yaml') as stream:
     config = yaml.safe_load(stream)
 
 # Set gateway intents
-intents = Intents.default()
+intents = Intents.none()
+intents.guilds = True
 intents.members = True
+intents.messages = True
 
 # Initialise bot
 bot = Bot(command_prefix=config['prefix'], intents=intents)
@@ -48,11 +34,11 @@ for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
 # Log bot startup
 @bot.event
 async def on_ready() -> None:
-    log.warning(f'We have logged in as {bot.user} in these servers:')
+    log.console(f'We have logged in as {bot.user} in these servers:')
     for guild in bot.guilds:
-        log.warning(f'{guild.name} ({guild.id})')
-    log.warning(f'({len(bot.guilds)} servers)')
-    log.warning('************************')
+        log.console(f'{guild.name} ({guild.id})')
+    log.console(f'({len(bot.guilds)} servers)')
+    log.console('************************')
 
 # Handle command cooldown
 @bot.event

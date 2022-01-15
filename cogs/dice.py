@@ -2,9 +2,10 @@ import json
 import random
 
 import requests
+from discord import Forbidden
 from discord.ext.commands import Bot, BucketType, Cog, Context, command, cooldown
 
-from .utils.logs import *
+from utils import log
 
 
 class RandomAPI:
@@ -99,7 +100,7 @@ class Dice(Cog):
         if ctx.channel.id in self.bot.quiet['channels']:
             return
         
-        log_command(ctx)
+        log.command(ctx)
         try:
             i = int(i)
             j = int(j)
@@ -113,13 +114,22 @@ class Dice(Cog):
     async def _send(self, ctx: Context, result: list) -> None:
         """Send formatted output to Discord."""
         message = ', '.join(str(x) for x in result)
-        if len(message) > 2000:
-            await ctx.send("Your roll is too big for Discord.")
-        elif len(message) > 250:
-            await ctx.send("Your roll has been sent as a DM.")
-            await ctx.author.send(message)
-        else:
-            await ctx.send(message)
+        try:
+            if len(message) > 2000:
+                await ctx.send("Your roll is too big for Discord.")
+            elif len(message) > 250:
+                await ctx.send("Your roll has been sent as a DM.")
+                await ctx.author.send(message)
+            else:
+                await ctx.send(message)
+        except Forbidden as err:
+            if err.code == 50007:
+                log.debug(f"Couldn't DM user {ctx.author.name}")
+                await ctx.send(f"<@!{ctx.author.id}>, I couldn't send you a DM. Please go to 'Privacy Settings' for this server and allow direct messages from server members.")
+            elif err.code == 50013:
+                log.debug(f"Missing permissions to message in '{channel.guild}/{channel}'")
+            else:
+                log.console(err)
 
 
 def setup(bot: Bot) -> None:
