@@ -11,6 +11,7 @@ The following information is collected and stored when you add keywords to the B
 * Server ID of your and the Bot's mutual servers
 * Keywords you add
 
+By using the keyword feature of the Bot, you agree to the collection and storage of the above information.
 
 ### Server Member Information Usage
 As a Server Member, your identifying information will **not** be stored by the Bot. However, your messages will be collected by the Bot and potentially relayed to a Bot User.  
