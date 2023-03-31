@@ -28,9 +28,10 @@ bot.db = config['database']
 bot.quiet = config['quiet']
 bot.dt = config['dt_channels']
 
-# Load cogs
-for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
-    bot.load_extension(f'cogs.{file[:-3]}')
+# Load cogs in setup
+async def setup_hook() -> None:
+    for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
+        await bot.load_extension(f'cogs.{file[:-3]}')
 
 # Log bot startup
 @bot.event
@@ -43,7 +44,6 @@ async def on_ready() -> None:
 @bot.event
 async def on_disconnect() -> None:
     log.console('Disconnected from Discord.')
-    log.console(f'Reason: {bot.ws.close_code}: {bot.ws.close_reason}')
 
 # Handle command cooldown
 @bot.event
