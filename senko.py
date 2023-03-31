@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 
 import yaml
 from discord import Intents
@@ -47,4 +48,5 @@ async def on_command_error(ctx: Context, error: CommandError) -> None:
         await ctx.send(error)
 
 # Start bot
-bot.run(config['token'])
+token = config['token_dev'] if len(sys.argv) > 1 else config['token_prod']
+bot.run(token)
