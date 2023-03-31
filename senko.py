@@ -35,11 +35,15 @@ for file in filter(lambda file: file.endswith('.py'), os.listdir('./cogs')):
 # Log bot startup
 @bot.event
 async def on_ready() -> None:
-    log.console(f'We have logged in as {bot.user} in these servers:')
-    for guild in bot.guilds:
-        log.console(f'{guild.name} ({guild.id})')
-    log.console(f'({len(bot.guilds)} servers)')
-    log.console('************************')
+    log.console(f'Logged in as {bot.user} in {len(bot.guilds)} servers.')
+    owner = bot.get_user(int(config['owner']))
+    await owner.send(f'Connected in {len(bot.guilds)} servers.')
+
+# Log bot disconnect
+@bot.event
+async def on_disconnect() -> None:
+    log.console('Disconnected from Discord.')
+    log.console(f'Reason: {bot.ws.close_code}: {bot.ws.close_reason}')
 
 # Handle command cooldown
 @bot.event
