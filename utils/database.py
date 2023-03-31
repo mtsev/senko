@@ -25,7 +25,7 @@ class Database:
         """ Return dict of users (user IDs) in a guild and their keywords """
         # If guild isn't in cache, update cache
         if guild not in self.cache.keys():
-            print("pull from database into cache")
+            # print("db.get_guild: pull from database into cache")
             self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "CALL get_words (%s)"
@@ -35,7 +35,7 @@ class Database:
 
         # Return guild from cache
         temp = self.cache.get_guild(guild)
-        print(f"get_guild: {temp}")
+        # print(f"db.get_guild: {temp}")
         return temp
 
     def add_guild(self, guild: Guild) -> None:
@@ -92,7 +92,7 @@ class Database:
         
         # If user isn't in cache, get from database
         if words is None:
-            print("user not in cache")
+            # print(f"db.get_words: user {user} not in cache, pulling list from database")
             self.conn.ping(reconnect=True)
             with self.conn.cursor() as cursor:
                 query = "SELECT `word` FROM `keywords` WHERE `user`=%s"
@@ -103,6 +103,7 @@ class Database:
 
     def add_words(self, user: int, words: list) -> None:
         """ Add words to database """
+        # print(f"db.add_words: {words}")
         self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for word in words:
@@ -112,7 +113,7 @@ class Database:
                 except pymysql.err.IntegrityError as err:
                     # This error gets thrown if user tries to insert a keyword
                     # they already have (unique key 'unique_keyword'). But if
-                    # it's something else, print the error.
+                    # it's something else, # print the error.
                     if 'unique_keyword' not in str(err):
                         log.console(err)
         self.conn.commit()
@@ -120,6 +121,7 @@ class Database:
 
     def remove_words(self, user: int, words: list) -> None:
         """ Remove words from database """
+        # print(f"db.remove_words: {words}")
         self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for word in words:
@@ -134,18 +136,21 @@ class Database:
     def is_new_user(self, user: int) -> bool:
         """ Check if a user is in database or not. Check cache first. """
         if self.cache.get_words(user) is not None:
-            return False
+            res = False
 
         self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "SELECT EXISTS (SELECT 1 FROM `guilds` WHERE `user`=%s)"
             cursor.execute(query, (user,))
             result = cursor.fetchone()
-        return (0 in result.values())
+        res = (0 in result.values())
+        # print(f"db.is_new_user: {res}")
+        return res
 
     def add_new_user(self, guilds: list, user: int) -> None:
         """ Add all the guild mappings to database and add new user to cache. """
         # This only gets called after is_new_user() so we know the user is new.
+        # print(f"db.add_new_user: {user}")
         self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             for guild in guilds:
@@ -158,6 +163,7 @@ class Database:
         """ Check if a user has anymore keywords left and remove them if they don't """
         # This only gets called by remove_words()
         # User may not be cached so check the database
+        # print(f"db.remove_user_if_empty: {user}")
         self.conn.ping(reconnect=True)
         with self.conn.cursor() as cursor:
             query = "SELECT EXISTS (SELECT 1 FROM `keywords` WHERE `user`=%s)"

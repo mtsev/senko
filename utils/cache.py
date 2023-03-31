@@ -81,7 +81,7 @@ class Cache:
                 user = User(user_id, words)
             guild.add_user(user)  
         self.cache[guild_id] = guild
-        print(f"cache.add_guild: {self.get_guild(guild_id)}")
+        # print(f"cache.add_guild: {self.get_guild(guild_id)}")
 
     def remove_guild(self, guild_id: int) -> None:
         """ Remove guild from cache """
@@ -146,4 +146,4 @@ class Cache:
             user = guild.get_user(str(user_id))
             if user is not None:
                 return user
-        print(f"User not found for {user_id}")
+        # print(f"User not found for {user_id}")
